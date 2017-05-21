@@ -3,14 +3,18 @@
     package="net.zexes_g.demontrack">
 
     <!-- Permissions -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
+
+
+    <!-- PROTECTION_NORMAL (No need user interaction) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Need user interaction -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <!-- Application-->
+    <!-- Application -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,7 +23,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!--Activities-->
+        <!-- Receivers -->
+
+
+        <!-- Services -->
+        <service android:name=".GpsLocationService" />
+
+        <!-- Activities -->
         <activity android:name=".GPS_Activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,10 +38,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Services-->
-        <service android:name=".GPS_Service" />
-
-
+        <service
+            android:name=".NetworkLocationService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

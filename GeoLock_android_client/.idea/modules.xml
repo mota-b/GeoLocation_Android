@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DemonTrack.iml" filepath="$PROJECT_DIR$/DemonTrack.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GeoLock_android_client.iml" filepath="$PROJECT_DIR$/GeoLock_android_client.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

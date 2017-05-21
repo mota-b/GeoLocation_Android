@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Geolocalisation APP Client"
+        android:textColor="#CFD8DC"
+        android:textSize="18sp"
+        android:textStyle="italic" />
+    <Button
+        android:id="@+id/go"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/circle_button"
+        android:fontFamily="serif-monospace"
+        android:text="Go"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="#ecf0f1"
+        android:textSize="50dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:text="C©pyright"
+        android:textColor="#CFD8DC"
+        android:textSize="20sp"
+        android:textStyle="italic" />
+
+</RelativeLayout>
