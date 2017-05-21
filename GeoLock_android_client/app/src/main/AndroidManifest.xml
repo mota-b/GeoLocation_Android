@@ -2,16 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.zexes_g.demontrack">
 
+    <!-- SDK -->
+    <uses-sdk
+        android:minSdkVersion="19"
+        android:targetSdkVersion="19" />
+
     <!-- Permissions -->
-
-
     <!-- PROTECTION_NORMAL (No need user interaction) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Need user interaction -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Application -->
@@ -23,25 +28,25 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Receivers -->
-
-
         <!-- Services -->
-        <service android:name=".GpsLocationService" />
-
-        <!-- Activities -->
-        <activity android:name=".GPS_Activity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
+        <service
+            android:name=".GpsLocationService"
+            android:enabled="true"
+            android:exported="true"/>
         <service
             android:name=".NetworkLocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"/>
+
+        <!-- Activities -->
+        <activity
+            android:name=".Activity_persm_and_go"
+            android:autoRemoveFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

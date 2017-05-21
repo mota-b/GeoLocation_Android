@@ -14,23 +14,19 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 
-public class GPS_Activity extends Activity {
+public class Activity_persm_and_go extends Activity {
 
-    ///////////////
-    // Attribute //
+      ///////////////
+     // Attribute //
     ///////////////
 
     /* layout */
     Button go;
-
-    /* Telephony */
-    TelephonyManager telephonyManager;
     //----------------------------------------------------------------------------------------------
 
 
-
-    /////////////////////////
-    // Activity Life Cycle //
+      /////////////////////////
+     // Activity Life Cycle //
     /////////////////////////
 
     /* Start activity */
@@ -79,9 +75,6 @@ public class GPS_Activity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        /* Resume receiver */
-        //resume_receivers();
     }
 
     /* Activity is about to be hide */
@@ -106,14 +99,8 @@ public class GPS_Activity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        /* If the gps_receiver doesn existe *//*
-        if (gps_service_location_receiver != null){
-            *//* Than unregister it *//*
-            unregisterReceiver(gps_service_location_receiver);
-        }*/
     }
-    //--------------------------------------------------
+    //----------------------------------------------------------------------------------------------
 
 
       //////////////
@@ -131,9 +118,9 @@ public class GPS_Activity extends Activity {
         * AND the permissions are NOT GRANTED
         */
         if (Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(GPS_Activity.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(GPS_Activity.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(GPS_Activity.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED)
+                ContextCompat.checkSelfPermission(Activity_persm_and_go.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(Activity_persm_and_go.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(Activity_persm_and_go.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED)
         {
             /* Than we have to request These permissions */
             requestPermissions(new String[]{
@@ -147,7 +134,6 @@ public class GPS_Activity extends Activity {
         * You can use the Application
         */
     }
-
 
     /* When we have a request Permission */
     @Override
@@ -171,7 +157,6 @@ public class GPS_Activity extends Activity {
             }
         }
     }
-
 
     /* Initialise components */
     private void init() {
@@ -241,7 +226,7 @@ public class GPS_Activity extends Activity {
 
                     *//**//* POST to server in ASYNCH *//**//*
                     // ID;lat;lon;Day_weak;dd/MM/yyy;H:mm:ss
-                    new Call_serverAsyncTask().execute(imei.getText().toString(),lat,lon,alt,sat,""+android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date()));
+                    new ServerCallAsyncTask().execute(imei.getText().toString(),lat,lon,alt,sat,""+android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date()));
                 }
             };
             *//**//* AND regester it *//**//*
@@ -277,7 +262,4 @@ public class GPS_Activity extends Activity {
 */
     }
     //----------------------------------------------------------------------------------------------
-
-
-
 }

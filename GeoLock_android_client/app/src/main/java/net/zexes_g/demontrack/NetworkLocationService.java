@@ -11,15 +11,16 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.util.Date;
 import java.util.Iterator;
 
 public class NetworkLocationService extends Service implements LocationListener {
 
-
-    ///////////////
-    // Attribute //
+      ///////////////
+     // Attribute //
     ///////////////
 
     /* Refresh params */
@@ -30,13 +31,13 @@ public class NetworkLocationService extends Service implements LocationListener 
     private LocationManager network_locationManager;
     private final String NETWORK_PROVIDER = LocationManager.NETWORK_PROVIDER;
 
-    /* Location data */
+    /* Data */
     String data;
-    String lat, lon, alt;
+    String IMEI, lat, lon, alt, calender;
     //----------------------------------------------------------------------------------------------
 
-    ////////////////////////
-    // Service Life Cycle //
+      ////////////////////////
+     // Service Life Cycle //
     ////////////////////////
 
     /* Create Service */
@@ -47,7 +48,6 @@ public class NetworkLocationService extends Service implements LocationListener 
         /* Initialise components */
         init();
     }
-
 
     /** The service is starting, due to a call to startService() */
     @Override
@@ -64,7 +64,6 @@ public class NetworkLocationService extends Service implements LocationListener 
     public void onRebind(Intent intent) {
         super.onRebind(intent);
     }
-
 
     /* When a client bind to the service */
     @Nullable
@@ -92,23 +91,25 @@ public class NetworkLocationService extends Service implements LocationListener 
     //----------------------------------------------------------------------------------------------
 
 
-    ///////////////
-    // Listeners //
+      ///////////////
+     // Listeners //
     ///////////////
 
     /* Location listener */
     @Override
     public void onLocationChanged(Location location) {
 
-        /* Get Data */
+        /* Get data */
         lat = "" + location.getLatitude();
         lon = "" + location.getLongitude();
         alt = "" + location.getAltitude();
-        data = lat + "\n" + lon + "\n" + alt;
+        calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
-        /* Send Data */
+        /* Send data */
+        data = lat + "\n" + lon + "\n" + alt;
         Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
-}
+        new ServerCallAsyncTask().execute(IMEI, NETWORK_PROVIDER, lat, lon, "none", "none", calender);
+    }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
@@ -121,16 +122,19 @@ public class NetworkLocationService extends Service implements LocationListener 
     //----------------------------------------------------------------------------------------------
 
 
-    //////////////
-    // Methodes //
+      //////////////
+     // Methodes //
     //////////////
 
     /* Initialise the components */
     private void init() {
+
+        /* Get the IMEI */
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        IMEI = "" + telephonyManager.getDeviceId();
+
         /* Initialise the managers */
         network_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
     }
     //----------------------------------------------------------------------------------------------
-
-
 }

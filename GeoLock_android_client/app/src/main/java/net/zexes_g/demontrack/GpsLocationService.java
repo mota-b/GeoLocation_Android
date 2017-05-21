@@ -1,5 +1,6 @@
 package net.zexes_g.demontrack;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -13,8 +14,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Button;
 
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -22,8 +23,6 @@ import java.util.Iterator;
  */
 
 public class GpsLocationService extends Service implements LocationListener ,GpsStatus.Listener{
-
-
 
       ///////////////
      // Attribute //
@@ -37,14 +36,13 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     private LocationManager gps_locationManager;
     private final String GPS_PROVIDER = LocationManager.GPS_PROVIDER;
 
-    /* Location data */
+    /* Data */
     String data;
-    String lat, lon, alt;
+    String IMEI, lat, lon, alt, satel, calender;
 
     /* Intents */
     Intent networkLocationService;
     //----------------------------------------------------------------------------------------------
-
 
       ////////////////////////
      // Service Life Cycle //
@@ -59,14 +57,12 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         init();
     }
 
-
     /** The service is starting, due to a call to startService() */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.d("AABBCC","Service Start command " + GPS_PROVIDER);
         /* Activate the listeners */
-        //network_locationManager.requestLocationUpdates(NETWORK_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
         return startId;
     }
@@ -76,7 +72,6 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     public void onRebind(Intent intent) {
         super.onRebind(intent);
     }
-
 
     /* When a client bind to the service */
     @Nullable
@@ -101,6 +96,17 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             gps_locationManager.removeUpdates(this);
         }
     }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Intent restartService = new Intent(getApplicationContext(),
+                this.getClass());
+        restartService.setPackage(getPackageName());
+        PendingIntent restartServicePI = PendingIntent.getService(
+                getApplicationContext(), 1, restartService,
+                PendingIntent.FLAG_ONE_SHOT);
+    }
     //----------------------------------------------------------------------------------------------
 
 
@@ -122,20 +128,28 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         lat = "" + location.getLatitude();
         lon = "" + location.getLongitude();
         alt = "" + location.getAltitude();
-        data = lat + "\n" + lon + "\n" + alt;
+        calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
+        data = lat + "\n" + lon + "\n" + alt;
         Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
+        new ServerCallAsyncTask().execute(IMEI, GPS_PROVIDER, lat, lon, alt, satel, calender);
     }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
     @Override
     public void onProviderEnabled(String provider) {
+        gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
+        gps_locationManager.addGpsStatusListener(this);
     }
     @Override
     public void onProviderDisabled(String provider) {
+
         // TODO popup notification in time of work
+        if (gps_locationManager != null){
+            gps_locationManager.removeGpsStatusListener(this);
+        }
     }
 
     /* Gps status listener */
@@ -158,7 +172,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             int nb_sat_used = 0;
             while (sat.hasNext()) {
                 GpsSatellite satellite = sat.next();
-                lSatellites = "Satellite : ";
+                lSatellites = "";
                 if(satellite.usedInFix())
                     lSatellites += (nb_sat_used++);
                 else
@@ -170,7 +184,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
                 networkLocationService = new Intent(this, NetworkLocationService.class);
                 startService(networkLocationService);
             }
-            Log.d("AABBCC",GPS_PROVIDER + " : "+lSatellites);
+
+            satel = "" + lSatellites;
+            Log.d("AABBCC",GPS_PROVIDER + " : " + satel);
+
         }
     }
     //----------------------------------------------------------------------------------------------
@@ -183,6 +200,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     /* Initialise the components */
     private void init() {
         Log.d("AABBCC","Service init");
+
+        /* Get the IMEI */
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        IMEI = "" + telephonyManager.getDeviceId();
 
         /* Get the network Location Service */
         networkLocationService = null;
