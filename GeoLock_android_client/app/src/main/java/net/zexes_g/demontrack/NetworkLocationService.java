@@ -14,6 +14,14 @@ import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -34,6 +42,14 @@ public class NetworkLocationService extends Service implements LocationListener 
     /* Data */
     String data;
     String IMEI, lat, lon, alt, calender;
+
+    /* Socket io */
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket("http://geomeet.ngrok.io");
+        } catch (URISyntaxException e) {}
+    }
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -56,6 +72,7 @@ public class NetworkLocationService extends Service implements LocationListener 
         Log.d("AABBCC","Service Start command " + NETWORK_PROVIDER);
         /* Activate the listeners */
         network_locationManager.requestLocationUpdates(NETWORK_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
+
         return startId;
     }
 
@@ -106,9 +123,22 @@ public class NetworkLocationService extends Service implements LocationListener 
         calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
+        JSONObject server_data = new JSONObject();
+        try {
+            server_data.accumulate("imei",IMEI);
+            server_data.accumulate("provider",NETWORK_PROVIDER);
+            server_data.accumulate("latLon",lat);
+            server_data.accumulate("latLon",lon);
+            server_data.accumulate("alt","none");
+            server_data.accumulate("satel","none");
+            server_data.accumulate("calender",calender);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         data = lat + "\n" + lon + "\n" + alt;
         Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
-        new ServerCallAsyncTask().execute(IMEI, NETWORK_PROVIDER, lat, lon, "none", "none", calender);
+        mSocket.emit("client_data",server_data);
+        //new ServerCallAsyncTask().execute(IMEI, NETWORK_PROVIDER, lat, lon, "none", "none", calender);
     }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -135,6 +165,33 @@ public class NetworkLocationService extends Service implements LocationListener 
 
         /* Initialise the managers */
         network_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        /* Socket */
+        socket_callBacks();
+        mSocket.connect();
+    }
+
+    /* Socket Events */
+    private void socket_callBacks() {
+
+        /* Event declaration */
+        Emitter.Listener onGet_something = new Emitter.Listener() {
+            @Override
+            public void call(final Object... args) {
+                JSONObject data = (JSONObject) args[0];
+                //String username;
+                String data0;
+                try {
+                    data0 = data.getString("data0_name");
+                } catch (JSONException e) {
+                    return;
+                }
+                // use the data0 some how :p
+            }
+
+        /* Seth event on the stack */
+            //mSocket.on("message", onGet_something);
+        };
     }
     //----------------------------------------------------------------------------------------------
 }

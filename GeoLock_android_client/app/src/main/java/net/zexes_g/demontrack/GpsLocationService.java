@@ -15,6 +15,14 @@ import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -42,6 +50,14 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
 
     /* Intents */
     Intent networkLocationService;
+
+    /* Socket io */
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket("http://geomeet.ngrok.io");
+        } catch (URISyntaxException e) {}
+    }
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -64,6 +80,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         Log.d("AABBCC","Service Start command " + GPS_PROVIDER);
         /* Activate the listeners */
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
+
         return startId;
     }
 
@@ -131,9 +148,22 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
+        JSONObject server_data = new JSONObject();
+        try {
+            server_data.accumulate("imei",IMEI);
+            server_data.accumulate("provider",GPS_PROVIDER);
+            server_data.accumulate("latLon",lat);
+            server_data.accumulate("latLon",lon);
+            server_data.accumulate("alt",alt);
+            server_data.accumulate("satel",satel);
+            server_data.accumulate("calender",calender);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         data = lat + "\n" + lon + "\n" + alt;
         Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
-        new ServerCallAsyncTask().execute(IMEI, GPS_PROVIDER, lat, lon, alt, satel, calender);
+        mSocket.emit("client_data",server_data);
+        //new ServerCallAsyncTask().execute(IMEI, GPS_PROVIDER, lat, lon, alt, satel, calender);
     }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -211,6 +241,33 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Initialise the managers */
         gps_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         gps_locationManager.addGpsStatusListener(this);
+
+        /* Socket */
+        socket_callBacks();
+        mSocket.connect();
+    }
+
+    /* Socket Events */
+    private void socket_callBacks() {
+
+        /* Event declaration */
+        Emitter.Listener onGet_something = new Emitter.Listener() {
+            @Override
+            public void call(final Object... args) {
+                JSONObject data = (JSONObject) args[0];
+                //String username;
+                String data0;
+                try {
+                    data0 = data.getString("data0_name");
+                } catch (JSONException e) {
+                    return;
+                }
+                // use the data0 some how :p
+            }
+
+        /* Seth event on the stack */
+        //mSocket.on("message", onGet_something);
+        };
     }
     //----------------------------------------------------------------------------------------------
 
