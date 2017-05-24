@@ -22,6 +22,7 @@ public class Activity_persm_and_go extends Activity {
 
     /* layout */
     Button go;
+    Button stop;
     //----------------------------------------------------------------------------------------------
 
 
@@ -163,6 +164,7 @@ public class Activity_persm_and_go extends Activity {
 
         /* Link layout */
         go = (Button) findViewById(R.id.go);
+        stop = (Button) findViewById(R.id.stop);
     }
 
     /* We can use buttons */
@@ -170,9 +172,16 @@ public class Activity_persm_and_go extends Activity {
         go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 /* User Location Service */
                 startLocation_service();
+            }
+        });
+
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /* User Location Service */
+                stopLocation_service();
             }
         });
     }
@@ -182,6 +191,13 @@ public class Activity_persm_and_go extends Activity {
         startService(new Intent(this, GpsLocationService.class));
         this.finish();
     }
+
+    /* Stop User Location Service */
+    private void stopLocation_service() {
+        stopService(new Intent(this, GpsLocationService.class));
+        //this.finish();
+    }
+
 
     /* Resume receivers */
     private void resume_receivers() {

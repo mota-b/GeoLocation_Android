@@ -1,5 +1,6 @@
 package net.zexes_g.demontrack;
 
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -9,9 +10,11 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -52,6 +55,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
 
     /* Static Socket from app */
     private ApplicationManager app;
+
+    /* Notification */
+    NotificationManager notificationManager;
+    NotificationCompat.Builder mBuilder;
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -109,8 +116,12 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Desactivate the socket */
         app.getSocket().disconnect();
         app.kill_events();
+
+        /* UnNotify */
+        notificationManager.cancel(1);
     }
 
+    /* Restart service if OS stop it due to need memory */
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
@@ -169,6 +180,9 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Reacticate socket */
         app.init_events();
         app.getSocket().connect();
+
+        /* Notify */
+        pop_notification();
     }
     @Override
     public void onProviderDisabled(String provider) {
@@ -181,6 +195,9 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Desactivate socket */
         app.getSocket().disconnect();
         app.kill_events();
+
+        /* UnNotify */
+        notificationManager.cancel(1);
     }
 
     /* Gps status listener */
@@ -250,6 +267,35 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             app.init_events();
             app.getSocket().connect();
         }
+
+        /* Init & Pop notification */
+        init_notification();
+        pop_notification();
+    }
+
+    /* Initialise the notification */
+    private void init_notification() {
+
+        /* Set the intent */
+        final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 1, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        /* Build notification */
+        mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_location_on_black_24dp)
+                        .setContentTitle("GeoLocation activated")
+                        .setContentText("Sending Location ...")
+                        .setContentIntent(pendingIntent)
+                        .setOngoing(true)
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+    }
+
+    /* Pop the notification */
+    private void pop_notification() {
+        /* Activate Notification */
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, mBuilder.build());
     }
     //----------------------------------------------------------------------------------------------
 }

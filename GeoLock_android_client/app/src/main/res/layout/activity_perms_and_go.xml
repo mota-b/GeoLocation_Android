@@ -8,37 +8,57 @@
     android:padding="20dp">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:text="Geolocalisation APP Client"
+        android:text="GeoLocation Phone Client"
         android:textColor="#CFD8DC"
-        android:textSize="18sp"
-        android:textStyle="italic" />
+        android:textSize="24sp"
+        android:textStyle="bold" />
     <Button
         android:id="@+id/go"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/circle_button"
+        android:background="@drawable/go_button"
         android:fontFamily="serif-monospace"
         android:text="Go"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textColor="#ecf0f1"
         android:textSize="50dp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:layout_marginEnd="17dp"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/stop" />
+
+    <Button
+        android:id="@+id/stop"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/stop_button"
+        android:fontFamily="serif-monospace"
+        android:text="STOP"
+        android:textColor="#ecf0f1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="105dp"
+        android:layout_marginEnd="23dp"
+        android:layout_above="@+id/textView2"
+        android:layout_alignEnd="@+id/textView" />
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:text="C©pyright"
         android:textColor="#CFD8DC"
-        android:textSize="20sp"
+        android:textSize="12sp"
         android:textStyle="italic" />
 
 </RelativeLayout>
