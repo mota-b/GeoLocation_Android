@@ -29,7 +29,6 @@
         android:textColor="#ecf0f1"
         android:textSize="50dp"
         android:textStyle="bold"
-        android:layout_marginEnd="17dp"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@+id/stop" />
 
@@ -44,10 +43,10 @@
         android:textColor="#ecf0f1"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="105dp"
-        android:layout_marginEnd="23dp"
         android:layout_above="@+id/textView2"
-        android:layout_alignEnd="@+id/textView" />
+        android:layout_alignEnd="@+id/textView"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="100dp" />
 
     <TextView
         android:id="@+id/textView2"
@@ -55,7 +54,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
         android:text="C©pyright"
         android:textColor="#CFD8DC"
         android:textSize="12sp"

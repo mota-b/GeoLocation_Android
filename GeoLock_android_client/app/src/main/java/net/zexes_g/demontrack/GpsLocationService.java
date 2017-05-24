@@ -283,7 +283,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Build notification */
         mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_location_on_black_24dp)
+                        .setSmallIcon(R.drawable.ic_stat_name)
                         .setContentTitle("GeoLocation activated")
                         .setContentText("Sending Location ...")
                         .setContentIntent(pendingIntent)

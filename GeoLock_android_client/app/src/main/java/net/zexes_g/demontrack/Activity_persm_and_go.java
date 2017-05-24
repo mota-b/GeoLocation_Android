@@ -2,17 +2,25 @@ package net.zexes_g.demontrack;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class Activity_persm_and_go extends Activity {
 
@@ -23,6 +31,10 @@ public class Activity_persm_and_go extends Activity {
     /* layout */
     Button go;
     Button stop;
+
+    /* Notification */
+    NotificationManager notificationManager;
+    NotificationCompat.Builder mBuilder;
     //----------------------------------------------------------------------------------------------
 
 
@@ -173,7 +185,22 @@ public class Activity_persm_and_go extends Activity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-                startLocation_service();
+                if(!isMyServiceRunning(GpsLocationService.class)){
+
+                    /* Is GPS On */
+                    LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+                    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+
+                        /* Ask for GPS */
+                        Intent gps = new Intent(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        startActivityForResult(gps,1);
+                    }
+                    else
+                        /* Start GPS */
+                        startLocation_service();
+                }
+                else
+                    Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -181,9 +208,25 @@ public class Activity_persm_and_go extends Activity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-                stopLocation_service();
+                if(isMyServiceRunning(GpsLocationService.class)){
+                    stopLocation_service();
+                }
+                else
+                    Toast.makeText(getApplicationContext(), "The service is Already Stopped", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /* Result ask GPS */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1){
+            LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+            if ( manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+                startLocation_service();
+            }
+        }
     }
 
     /* Start User Location Service */
@@ -194,88 +237,50 @@ public class Activity_persm_and_go extends Activity {
 
     /* Stop User Location Service */
     private void stopLocation_service() {
-        stopService(new Intent(this, GpsLocationService.class));
+
+        /* Stop Service */
+        stopService( new Intent(this, GpsLocationService.class));
+
+        /* notify */
+        init_notification();
+        pop_notification();
+
         //this.finish();
     }
 
+    /* Initialise the notification */
+    private void init_notification() {
 
-    /* Resume receivers */
-    private void resume_receivers() {
+        /* Set the intent */
+        final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 2, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        /* Location update receiver *//**//*
-        if (gps_service_location_receiver == null) {
-            *//**//* If the gps_location_receiver doesn't existe
-            *   Than create one
-            * *//**//*
-            gps_service_location_receiver = new BroadcastReceiver() {
+        /* Build notification */
+        mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_stop)
+                        .setContentTitle("GeoLocation Desactivated")
+                        .setContentText("Stop Sending Location.")
+                        .setContentIntent(pendingIntent)
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+    }
 
-                *//**//* Set the receiv Event in the creation of the receiver *//**//*
-                @Override
-                public void onReceive(Context context, Intent location_gps_update) {
+    /* Pop the notification */
+    private void pop_notification() {
+        /* Activate Notification */
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(2, mBuilder.build());
+    }
 
-                    if(gps_ACTIF_STATE != "found")
-                        *//**//* Change icon state *//**//*
-                        draw_state(4);
-
-                    *//**//* And change the state *//**//*
-                    gps_ACTIF_STATE = "found";
-
-                    *//**//* Get the position *//**//*
-
-
-
-                    lat = "" + location_gps_update.getExtras().get("lat");
-                    lon = "" + location_gps_update.getExtras().get("lon");
-                    alt = "" + location_gps_update.getExtras().get("alt");
-                    sat = "" + location_gps_update.getExtras().get("sat");
-
-
-
-
-
-
-                    *//**//* Append coords *//**//* *//**//* TO desplay the trace in Scrollable Text View *//**//*
-                    // coord.setText(lat+"\n"+lon+"\n------------\n"+coord.getText());
-
-                    *//**//* Set coords *//**//*
-                    coord.setText(lat + "\n" + lon + "\n" + alt +"\n"+ sat);
-
-                    *//**//* POST to server in ASYNCH *//**//*
-                    // ID;lat;lon;Day_weak;dd/MM/yyy;H:mm:ss
-                    new ServerCallAsyncTask().execute(imei.getText().toString(),lat,lon,alt,sat,""+android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date()));
-                }
-            };
-            *//**//* AND regester it *//**//*
-            registerReceiver(gps_service_location_receiver, new IntentFilter("location_update"));*//*
+    /* Test the status of a service */
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
         }
-
-        *//* Location status receiver *//*
-        if (gps_service_status_receiver == null) {
-            *//* If the gps_status_receiver doesn't existe
-            *   Than create one
-            *//*
-            gps_service_status_receiver = new BroadcastReceiver() {
-
-                *//* Set the receiv Event in the creation of the receiver *//*
-                @Override
-                public void onReceive(Context context, Intent gps_status) {
-
-                    Log.d("STATUS","IN ACTIVITY :"+gps_status.getExtras().get("status"));
-                    *//* Change state from service*//*
-                    String status = ""+gps_status.getExtras().get("status");
-                    gps_ACTIF_STATE = status;
-                    if(status.equals("off"))
-                        draw_state(2);
-                    else
-                        if (status.equals("on"))
-                            draw_state(3);
-                }
-            };
-            *//* AND regester it *//*
-            registerReceiver(gps_service_status_receiver, new IntentFilter("location_status"));
-        }
-
-*/
+        return false;
     }
     //----------------------------------------------------------------------------------------------
 }
