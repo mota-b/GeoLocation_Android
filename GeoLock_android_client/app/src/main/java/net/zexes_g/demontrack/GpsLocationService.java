@@ -37,27 +37,21 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     ///////////////
 
     /* Refresh params */
-    private final int TIME_REFRESH = 1000 * 3; /* 1000 ms = 1s */
-    private final int DISTANCE_REFRESH = 0;    /* 0 m */
+    private int TIME_REFRESH = 1000 * 3; /* 1000 ms = 1s */
+    private int DISTANCE_REFRESH = 0;    /* 0 m */
 
     /* GPS_MANAGER */
     private LocationManager gps_locationManager;
-    private final String GPS_PROVIDER = LocationManager.GPS_PROVIDER;
+    private String GPS_PROVIDER = LocationManager.GPS_PROVIDER;
 
     /* Data */
-    String data;
-    String IMEI, lat, lon, alt, satel, calender;
+    private String IMEI, satel;
 
     /* Intents */
-    Intent networkLocationService;
+    private Intent networkLocationService;
 
-    /* Socket io */
-    private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket("http://geomeet.ngrok.io");
-        } catch (URISyntaxException e) {}
-    }
+    /* Static Socket from app */
+    private ApplicationManager app;
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -68,7 +62,6 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public void onCreate() {
 
-        Log.d("AABBCC","Service Create " + GPS_PROVIDER);
         /* Initialise components */
         init();
     }
@@ -77,8 +70,8 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.d("AABBCC","Service Start command " + GPS_PROVIDER);
         /* Activate the listeners */
+        gps_locationManager.addGpsStatusListener(this);
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
 
         return startId;
@@ -107,11 +100,15 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("AABBCC","Service DESTROTY " + GPS_PROVIDER);
-        /* Desactivate the listener if is activated */
+
+        /* Remove the GPS location manager */
         if (gps_locationManager != null){
             gps_locationManager.removeUpdates(this);
         }
+
+        /* Desactivate the socket */
+        app.getSocket().disconnect();
+        app.kill_events();
     }
 
     @Override
@@ -142,28 +139,24 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         }
 
         /* Get data */
-        lat = "" + location.getLatitude();
-        lon = "" + location.getLongitude();
-        alt = "" + location.getAltitude();
-        calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
+        String calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
         JSONObject server_data = new JSONObject();
         try {
-            server_data.accumulate("imei",IMEI);
-            server_data.accumulate("provider",GPS_PROVIDER);
-            server_data.accumulate("latLon",lat);
-            server_data.accumulate("latLon",lon);
-            server_data.accumulate("alt",alt);
-            server_data.accumulate("satel",satel);
-            server_data.accumulate("calender",calender);
+
+            server_data.accumulate("imei", IMEI);
+            server_data.accumulate("provider", GPS_PROVIDER);
+            server_data.accumulate("latLon", "" + location.getLatitude());
+            server_data.accumulate("latLon", "" + location.getLongitude());
+            server_data.accumulate("alt", "" + location.getAltitude());
+            server_data.accumulate("satel", satel);
+            server_data.accumulate("calender", calender);
+
+            app.getSocket().emit("client_data",server_data);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        data = lat + "\n" + lon + "\n" + alt;
-        Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
-        mSocket.emit("client_data",server_data);
-        //new ServerCallAsyncTask().execute(IMEI, GPS_PROVIDER, lat, lon, alt, satel, calender);
     }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -172,6 +165,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     public void onProviderEnabled(String provider) {
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
         gps_locationManager.addGpsStatusListener(this);
+
+        /* Reacticate socket */
+        app.init_events();
+        app.getSocket().connect();
     }
     @Override
     public void onProviderDisabled(String provider) {
@@ -180,6 +177,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         if (gps_locationManager != null){
             gps_locationManager.removeGpsStatusListener(this);
         }
+
+        /* Desactivate socket */
+        app.getSocket().disconnect();
+        app.kill_events();
     }
 
     /* Gps status listener */
@@ -194,12 +195,14 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             Iterable<GpsSatellite>satellites = gpsStatus.getSatellites();
             Iterator<GpsSatellite> sat = satellites.iterator();
 
-            /* Fhe satellites list */
+            /* The satellites list */
             String lSatellites = null;
 
             /* Counters */
             int nb_sat_found = 0;
             int nb_sat_used = 0;
+
+            /* Iterate on satellites */
             while (sat.hasNext()) {
                 GpsSatellite satellite = sat.next();
                 lSatellites = "";
@@ -208,16 +211,15 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
                 else
                     lSatellites += (nb_sat_used);
                 lSatellites += "/"+(nb_sat_found++) ;
-
             }
+
+            /* Use the NetworkLocation service if no satellite used to fix location*/
             if(nb_sat_used == 0 && networkLocationService == null){
                 networkLocationService = new Intent(this, NetworkLocationService.class);
                 startService(networkLocationService);
             }
 
             satel = "" + lSatellites;
-            Log.d("AABBCC",GPS_PROVIDER + " : " + satel);
-
         }
     }
     //----------------------------------------------------------------------------------------------
@@ -229,47 +231,25 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
 
     /* Initialise the components */
     private void init() {
-        Log.d("AABBCC","Service init");
+
+        /* Get an instance for the Application */
+        app = (ApplicationManager) this.getApplication();
 
         /* Get the IMEI */
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         IMEI = "" + telephonyManager.getDeviceId();
 
-        /* Get the network Location Service */
+        /* Set the network Location Service intent */
         networkLocationService = null;
 
         /* Initialise the managers */
         gps_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        gps_locationManager.addGpsStatusListener(this);
 
-        /* Socket */
-        socket_callBacks();
-        mSocket.connect();
-    }
-
-    /* Socket Events */
-    private void socket_callBacks() {
-
-        /* Event declaration */
-        Emitter.Listener onGet_something = new Emitter.Listener() {
-            @Override
-            public void call(final Object... args) {
-                JSONObject data = (JSONObject) args[0];
-                //String username;
-                String data0;
-                try {
-                    data0 = data.getString("data0_name");
-                } catch (JSONException e) {
-                    return;
-                }
-                // use the data0 some how :p
-            }
-
-        /* Seth event on the stack */
-        //mSocket.on("message", onGet_something);
-        };
+        /* Acticate Socket */
+        if (gps_locationManager.isProviderEnabled(GPS_PROVIDER)){
+            app.init_events();
+            app.getSocket().connect();
+        }
     }
     //----------------------------------------------------------------------------------------------
-
-
 }

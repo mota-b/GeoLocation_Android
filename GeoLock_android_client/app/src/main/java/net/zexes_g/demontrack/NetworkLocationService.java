@@ -43,13 +43,8 @@ public class NetworkLocationService extends Service implements LocationListener 
     String data;
     String IMEI, lat, lon, alt, calender;
 
-    /* Socket io */
-    private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket("http://geomeet.ngrok.io");
-        } catch (URISyntaxException e) {}
-    }
+    /* Static Socket from app */
+    ApplicationManager app ;
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -60,7 +55,6 @@ public class NetworkLocationService extends Service implements LocationListener 
     @Override
     public void onCreate() {
 
-        Log.d("AABBCC","Service Create " + NETWORK_PROVIDER);
         /* Initialise components */
         init();
     }
@@ -69,10 +63,8 @@ public class NetworkLocationService extends Service implements LocationListener 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.d("AABBCC","Service Start command " + NETWORK_PROVIDER);
         /* Activate the listeners */
         network_locationManager.requestLocationUpdates(NETWORK_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
-
         return startId;
     }
 
@@ -99,8 +91,8 @@ public class NetworkLocationService extends Service implements LocationListener 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("AABBCC","Service DESTROTY " + NETWORK_PROVIDER);
-        /* Desactivate the listener if is activated */
+
+        /* Remove the Network location Manager */
         if (network_locationManager != null){
             network_locationManager.removeUpdates(this);
         }
@@ -117,28 +109,23 @@ public class NetworkLocationService extends Service implements LocationListener 
     public void onLocationChanged(Location location) {
 
         /* Get data */
-        lat = "" + location.getLatitude();
-        lon = "" + location.getLongitude();
-        alt = "" + location.getAltitude();
         calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
         JSONObject server_data = new JSONObject();
         try {
-            server_data.accumulate("imei",IMEI);
-            server_data.accumulate("provider",NETWORK_PROVIDER);
-            server_data.accumulate("latLon",lat);
-            server_data.accumulate("latLon",lon);
-            server_data.accumulate("alt","none");
-            server_data.accumulate("satel","none");
-            server_data.accumulate("calender",calender);
+            server_data.accumulate("imei", IMEI);
+            server_data.accumulate("provider", NETWORK_PROVIDER);
+            server_data.accumulate("latLon", location.getLatitude());
+            server_data.accumulate("latLon", location.getLongitude());
+            server_data.accumulate("alt", "none");
+            server_data.accumulate("satel", "none");
+            server_data.accumulate("calender", calender);
+
+            app.getSocket().emit("client_data",server_data);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        data = lat + "\n" + lon + "\n" + alt;
-        Log.d("AABBCC",location.getProvider() + " : (lat, lon, alt) : \n" + data);
-        mSocket.emit("client_data",server_data);
-        //new ServerCallAsyncTask().execute(IMEI, NETWORK_PROVIDER, lat, lon, "none", "none", calender);
     }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -158,40 +145,15 @@ public class NetworkLocationService extends Service implements LocationListener 
 
     /* Initialise the components */
     private void init() {
-
-        /* Get the IMEI */
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        IMEI = "" + telephonyManager.getDeviceId();
+        /* Get an instance for the Application */
+        app = (ApplicationManager) this.getApplication();
 
         /* Initialise the managers */
         network_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-        /* Socket */
-        socket_callBacks();
-        mSocket.connect();
-    }
-
-    /* Socket Events */
-    private void socket_callBacks() {
-
-        /* Event declaration */
-        Emitter.Listener onGet_something = new Emitter.Listener() {
-            @Override
-            public void call(final Object... args) {
-                JSONObject data = (JSONObject) args[0];
-                //String username;
-                String data0;
-                try {
-                    data0 = data.getString("data0_name");
-                } catch (JSONException e) {
-                    return;
-                }
-                // use the data0 some how :p
-            }
-
-        /* Seth event on the stack */
-            //mSocket.on("message", onGet_something);
-        };
+        /* Get the IMEI (Device ID) */
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        IMEI = "" + telephonyManager.getDeviceId();
     }
     //----------------------------------------------------------------------------------------------
 }
