@@ -8,6 +8,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -107,6 +108,11 @@ public class NetworkLocationService extends Service implements LocationListener 
     @Override
     public void onLocationChanged(Location location) {
 
+        /* Try to reconnect when server crash */
+        if(!app.getSocket().connected())
+            app.getSocket().connect();
+
+
         /* Get data */
         String calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
@@ -114,6 +120,8 @@ public class NetworkLocationService extends Service implements LocationListener 
         JSONObject server_data = new JSONObject();
         try {
             server_data.accumulate("imei", IMEI);
+            server_data.accumulate("model", Build.MANUFACTURER);
+            server_data.accumulate("model", Build.MODEL);
             server_data.accumulate("provider", NETWORK_PROVIDER);
             server_data.accumulate("latLon", location.getLatitude());
             server_data.accumulate("latLon", location.getLongitude());

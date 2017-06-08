@@ -25,11 +25,11 @@ public class ApplicationManager extends Application {
     private static Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://geomeet.ngrok.io");
+            mSocket = IO.socket("http://geo.ngrok.io");
         } catch (URISyntaxException e) {}
 
     }
-    Emitter.Listener onIs_serverActif;
+    Emitter.Listener onGet_something;
     //----------------------------------------------------------------------------------------------
 
       /////////////
@@ -43,7 +43,7 @@ public class ApplicationManager extends Application {
 
     /* Get the events */
     public Emitter.Listener getOnGet_something() {
-        return onIs_serverActif;
+        return onGet_something;
     }
     //----------------------------------------------------------------------------------------------
 
@@ -56,20 +56,18 @@ public class ApplicationManager extends Application {
     public void init_events() {
 
         /* Events declaration */
-        onIs_serverActif = new Emitter.Listener() {
+        onGet_something = new Emitter.Listener() {
             @Override
             public void call(final Object... args) {
                 JSONObject data = (JSONObject) args[0];
                 //String username;
-                String isActif;
+                String data0;
                 try {
-                    isActif = data.getString("isActif");
+                    data0 = data.getString("data0_name");
                 } catch (JSONException e) {
                     return;
                 }
-                if (isActif=="false"){
-                    restart_Service();
-                }
+                // use the data0 some how :p
             }
 
         /* Seth event on the stack */
@@ -77,13 +75,9 @@ public class ApplicationManager extends Application {
         };
     }
 
-    /* Restart the location service */
-    private void restart_Service() {
-    }
-
     /* Remove the callbacks */
     public void kill_events(){
-        mSocket.off("new message", onIs_serverActif);
+        mSocket.off("new message", onGet_something);
     }
     //----------------------------------------------------------------------------------------------
 }

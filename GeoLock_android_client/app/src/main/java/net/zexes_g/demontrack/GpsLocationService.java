@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -137,7 +138,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public void onLocationChanged(Location location) {
 
-        Log.d("AABBCC","socket connected ? "+ app.getSocket().connected());
+        /* Try to reconnect when server crash */
         if(!app.getSocket().connected())
             app.getSocket().connect();
 
@@ -153,8 +154,9 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Send data */
         JSONObject server_data = new JSONObject();
         try {
-
             server_data.accumulate("imei", IMEI);
+            server_data.accumulate("model", Build.MANUFACTURER);
+            server_data.accumulate("model", Build.MODEL);
             server_data.accumulate("provider", GPS_PROVIDER);
             server_data.accumulate("latLon", "" + location.getLatitude());
             server_data.accumulate("latLon", "" + location.getLongitude());
@@ -162,7 +164,8 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             server_data.accumulate("satel", satel);
             server_data.accumulate("calender", calender);
 
-            app.getSocket().emit("client_data",server_data);
+            if(!satel.equals(""))
+                app.getSocket().emit("client_data",server_data);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -178,7 +181,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Reacticate socket */
         app.init_events();
         app.getSocket().connect();
-        Log.d("AABBCC","socket connected ? "+ app.getSocket().connected());
+
         /* update notification */
         notifyBuilder.setContentText("Sending Location ...");
         notificationManager.notify(1, notifyBuilder.build());
@@ -234,8 +237,11 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
                 networkLocationService = new Intent(this, NetworkLocationService.class);
                 startService(networkLocationService);
             }
+            if(nb_sat_used != 0)
+                satel = "" + lSatellites;
+            else
+                satel = "";
 
-            satel = "" + lSatellites;
         }
     }
     //----------------------------------------------------------------------------------------------
