@@ -40,8 +40,7 @@ public class NetworkLocationService extends Service implements LocationListener 
     private final String NETWORK_PROVIDER = LocationManager.NETWORK_PROVIDER;
 
     /* Data */
-    String data;
-    String IMEI, lat, lon, alt, calender;
+    String IMEI;
 
     /* Static Socket from app */
     ApplicationManager app ;
@@ -109,7 +108,7 @@ public class NetworkLocationService extends Service implements LocationListener 
     public void onLocationChanged(Location location) {
 
         /* Get data */
-        calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
+        String calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
         JSONObject server_data = new JSONObject();

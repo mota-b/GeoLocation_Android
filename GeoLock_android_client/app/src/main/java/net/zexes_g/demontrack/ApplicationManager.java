@@ -29,7 +29,7 @@ public class ApplicationManager extends Application {
         } catch (URISyntaxException e) {}
 
     }
-    Emitter.Listener onGet_something;
+    Emitter.Listener onIs_serverActif;
     //----------------------------------------------------------------------------------------------
 
       /////////////
@@ -43,7 +43,7 @@ public class ApplicationManager extends Application {
 
     /* Get the events */
     public Emitter.Listener getOnGet_something() {
-        return onGet_something;
+        return onIs_serverActif;
     }
     //----------------------------------------------------------------------------------------------
 
@@ -56,18 +56,20 @@ public class ApplicationManager extends Application {
     public void init_events() {
 
         /* Events declaration */
-        onGet_something = new Emitter.Listener() {
+        onIs_serverActif = new Emitter.Listener() {
             @Override
             public void call(final Object... args) {
                 JSONObject data = (JSONObject) args[0];
                 //String username;
-                String data0;
+                String isActif;
                 try {
-                    data0 = data.getString("data0_name");
+                    isActif = data.getString("isActif");
                 } catch (JSONException e) {
                     return;
                 }
-                // use the data0 some how :p
+                if (isActif=="false"){
+                    restart_Service();
+                }
             }
 
         /* Seth event on the stack */
@@ -75,9 +77,13 @@ public class ApplicationManager extends Application {
         };
     }
 
+    /* Restart the location service */
+    private void restart_Service() {
+    }
+
     /* Remove the callbacks */
     public void kill_events(){
-        mSocket.off("new message", onGet_something);
+        mSocket.off("new message", onIs_serverActif);
     }
     //----------------------------------------------------------------------------------------------
 }

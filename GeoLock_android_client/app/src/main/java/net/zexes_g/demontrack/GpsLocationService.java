@@ -18,14 +18,9 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -58,7 +53,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
 
     /* Notification */
     NotificationManager notificationManager;
-    NotificationCompat.Builder mBuilder;
+    NotificationCompat.Builder notifyBuilder;
     //----------------------------------------------------------------------------------------------
 
       ////////////////////////
@@ -78,9 +73,8 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         /* Activate the listeners */
-        gps_locationManager.addGpsStatusListener(this);
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
-
+        gps_locationManager.addGpsStatusListener(this);
         return startId;
     }
 
@@ -143,6 +137,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public void onLocationChanged(Location location) {
 
+        Log.d("AABBCC","socket connected ? "+ app.getSocket().connected());
+        if(!app.getSocket().connected())
+            app.getSocket().connect();
+
         /* Check Network location service state */
         if (networkLocationService != null){
             stopService(networkLocationService);
@@ -180,14 +178,14 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Reacticate socket */
         app.init_events();
         app.getSocket().connect();
-
-        /* Notify */
-        pop_notification();
+        Log.d("AABBCC","socket connected ? "+ app.getSocket().connected());
+        /* update notification */
+        notifyBuilder.setContentText("Sending Location ...");
+        notificationManager.notify(1, notifyBuilder.build());
     }
     @Override
     public void onProviderDisabled(String provider) {
 
-        // TODO popup notification in time of work
         if (gps_locationManager != null){
             gps_locationManager.removeGpsStatusListener(this);
         }
@@ -196,8 +194,9 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         app.getSocket().disconnect();
         app.kill_events();
 
-        /* UnNotify */
-        notificationManager.cancel(1);
+        /* Update notification */
+        notifyBuilder.setContentText("GPS or Network disabled. In Stand-by ...");
+        notificationManager.notify(1, notifyBuilder.build());
     }
 
     /* Gps status listener */
@@ -281,10 +280,10 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 1, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         /* Build notification */
-        mBuilder =
+        notifyBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_name)
-                        .setContentTitle("GeoLocation activated")
+                        .setContentTitle("Tracker On")
                         .setContentText("Sending Location ...")
                         .setContentIntent(pendingIntent)
                         .setOngoing(true)
@@ -295,7 +294,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     private void pop_notification() {
         /* Activate Notification */
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, mBuilder.build());
+        notificationManager.notify(1, notifyBuilder.build());
     }
     //----------------------------------------------------------------------------------------------
 }

@@ -34,7 +34,7 @@ public class Activity_persm_and_go extends Activity {
 
     /* Notification */
     NotificationManager notificationManager;
-    NotificationCompat.Builder mBuilder;
+    NotificationCompat.Builder notifyBuilder;
     //----------------------------------------------------------------------------------------------
 
 
@@ -53,10 +53,9 @@ public class Activity_persm_and_go extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         /* Set layout */
-        //setContentView(R.layout.activity_gps_main);
         setContentView(R.layout.activity_perms_and_go);
 
-        // Is need permissions
+        /* Is need permissions */
         permissions();
 
         /* Initialise Components */
@@ -179,6 +178,23 @@ public class Activity_persm_and_go extends Activity {
         stop = (Button) findViewById(R.id.stop);
     }
 
+    /* Initialise the notification */
+    private void init_notification() {
+
+        /* Set the intent */
+        final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 2, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        /* Build notification */
+        notifyBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_stop)
+                        .setContentTitle("Tracker Off")
+                        .setContentText("Stop Sending Location.")
+                        .setContentIntent(pendingIntent)
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+    }
+
     /* We can use buttons */
     private void enable_buttons() {
         go.setOnClickListener(new View.OnClickListener() {
@@ -244,32 +260,13 @@ public class Activity_persm_and_go extends Activity {
         /* notify */
         init_notification();
         pop_notification();
-
-        //this.finish();
-    }
-
-    /* Initialise the notification */
-    private void init_notification() {
-
-        /* Set the intent */
-        final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
-        PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 2, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        /* Build notification */
-        mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_stop)
-                        .setContentTitle("GeoLocation Desactivated")
-                        .setContentText("Stop Sending Location.")
-                        .setContentIntent(pendingIntent)
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
     }
 
     /* Pop the notification */
     private void pop_notification() {
         /* Activate Notification */
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(2, mBuilder.build());
+        notificationManager.notify(2, notifyBuilder.build());
     }
 
     /* Test the status of a service */
