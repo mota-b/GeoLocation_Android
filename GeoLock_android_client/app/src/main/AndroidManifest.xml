@@ -2,10 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.zexes_g.demontrack">
 
-    <!-- SDK -->
-    <uses-sdk
-        android:minSdkVersion="17"
-        android:targetSdkVersion="19" />
+
 
     <!-- Permissions -->
     <!-- PROTECTION_NORMAL (No need user interaction) -->
