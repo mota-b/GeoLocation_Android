@@ -1,4 +1,4 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.demontrack.Activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -15,12 +15,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
+
+import net.zexes_g.demontrack.GpsLocationService;
 
 public class Activity_persm_and_go extends Activity {
 
@@ -28,7 +29,7 @@ public class Activity_persm_and_go extends Activity {
      // Attribute //
     ///////////////
 
-    /* layout */
+    /* layouta */
     Button go;
     Button stop;
 
@@ -52,7 +53,7 @@ public class Activity_persm_and_go extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        /* Set layout */
+        /* Set layouta */
         setContentView(R.layout.activity_perms_and_go);
 
         /* Is need permissions */
@@ -173,7 +174,7 @@ public class Activity_persm_and_go extends Activity {
     /* Initialise components */
     private void init() {
 
-        /* Link layout */
+        /* Link layouta */
         go = (Button) findViewById(R.id.go);
         stop = (Button) findViewById(R.id.stop);
     }

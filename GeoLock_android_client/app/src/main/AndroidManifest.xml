@@ -2,21 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.zexes_g.demontrack">
 
-
-
     <!-- Permissions -->
     <!-- PROTECTION_NORMAL (No need user interaction) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-    <!-- Need user interaction -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- Need user interaction -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <!-- Application -->
     <application
         android:name=".ApplicationManager"
         android:allowBackup="true"
@@ -26,25 +20,34 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- Activities-->
+        <activity
+            android:name=".ActivityMain"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--<activity-->
+            <!--android:name=".Activities.Activity_persm_and_go"-->
+            <!--android:autoRemoveFromRecents="true">-->
+        <!--</activity>-->
+
+
         <!-- Services -->
         <service
             android:name=".GpsLocationService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" />
         <service
-            android:name=".NetworkLocationService"
+            android:name=".GpsLocationService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" /> <!-- Activities -->
 
-        <!-- Activities -->
-        <activity
-            android:name=".Activity_persm_and_go"
-            android:autoRemoveFromRecents="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

@@ -17,7 +17,9 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
-import android.util.Log;
+
+import net.zexes_g.demontrack.ApplicationManager;
+import net.zexes_g.demontrack.NetworkLocationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;

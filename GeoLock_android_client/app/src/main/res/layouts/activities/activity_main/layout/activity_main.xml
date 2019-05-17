@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <!-- Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="30"
+            android:background="@color/info_area">
+
+        </LinearLayout> <!-- Info layout -->
+
+        <!-- Buttons Service -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="60"
+            android:background="@color/buttonsService_area">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+
+                <Button
+                    android:id="@+id/go"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_centerInParent="true"
+
+                    android:background="@drawable/go_button"
+                    android:fontFamily="serif-monospace"
+                    android:text="Go"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                    android:textColor="@color/go_button"
+                    android:textStyle="bold"
+                    android:layout_gravity="top|start"/>
+
+                <Button
+                    android:id="@+id/stop"
+
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+
+                    android:background="@drawable/stop_button"
+
+                    android:text="STOP"
+                    android:fontFamily="serif-monospace"
+                    android:textColor="@color/go_button"
+                    android:textStyle="bold"
+                    android:layout_gravity="bottom|end"/>
+            </LinearLayout>
+
+
+
+        </RelativeLayout> <!-- Buttons Service -->
+
+        <!-- Update Data -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:background="@color/updateData_area">
+
+        </LinearLayout> <!-- Data Update-->
+
+    </LinearLayout>
+
+</RelativeLayout>

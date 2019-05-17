@@ -4,4 +4,19 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="back">#3498db</color>
+
+
+    <!-- Go/Stop -->
+    <color name="go_button">#ecf0f1</color>
+
+    <!-- Info -->
+    <color name="info_area">#ecf0f1</color>
+
+    <!-- Buttons Service -->
+    <color name="buttonsService_area">#2980b9</color>
+
+    <!-- Update Data -->
+    <color name="updateData_area">#2c3e50</color>
+
+
 </resources>

@@ -3,8 +3,6 @@ package net.zexes_g.demontrack;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -13,18 +11,11 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
-import android.util.Log;
-
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.Iterator;
 
 public class NetworkLocationService extends Service implements LocationListener {
 
