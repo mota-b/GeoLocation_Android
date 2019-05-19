@@ -1,4 +1,4 @@
-package net.zexes_g.demontrack.Activities;
+package net.zexes_g.demontrack;
 
 import android.Manifest;
 import android.app.Activity;

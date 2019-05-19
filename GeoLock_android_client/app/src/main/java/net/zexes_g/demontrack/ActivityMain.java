@@ -2,20 +2,27 @@ package net.zexes_g.demontrack;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -50,6 +57,10 @@ public class ActivityMain extends AppCompatActivity {
     /* Permission codes */
     int LOCATION_PERMISSION_CODE = 100;
 
+    /* Other */
+    SharedPreferences permissionPreferences;
+    boolean isFirstPermissionLocationRequest;
+
 
     /**
      * Lyfe Cycle
@@ -78,45 +89,6 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        /* Enable the buttons */
-        start_GPSservice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                /*Request location permission*/
-                location_permission();
-
-                /* User Location Service */
-                if(!isMyServiceRunning(GpsLocationService.class)){
-
-                    /* Is GPS On */
-                    LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-                    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-
-                        /* Ask for GPS */
-                        Intent gps = new Intent(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        startActivityForResult(gps,1);
-                    }
-                    else
-                        /* Start GPS */
-                        startLocation_service();
-                }
-                else
-                    Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();
-            }
-        });
-        stop_GPSservice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                /* User Location Service */
-                if(isMyServiceRunning(GpsLocationService.class)){
-                    stopLocation_service();
-                }
-                else
-                    Toast.makeText(getApplicationContext(), "The service is Already Stopped", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
@@ -127,6 +99,8 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+
     }
 
     @Override
@@ -161,8 +135,52 @@ public class ActivityMain extends AppCompatActivity {
 
         /* Link layouta */
         start_GPSservice = (Button) findViewById(R.id.go);
-        start_GPSservice = (Button) findViewById(R.id.stop);
+        stop_GPSservice = (Button) findViewById(R.id.stop);
 
+        /* Enable the buttons */
+        start_GPSservice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                /*Request location permission*/
+                location_permission();
+
+                /* User Location Service */
+                /*if(!isMyServiceRunning(GpsLocationService.class)){
+
+                    *//* Is GPS On *//*
+                    LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+                    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+
+                        *//* Ask for GPS *//*
+                        Intent gps = new Intent(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        startActivityForResult(gps,1);
+                    }
+                    else
+                        *//* Start GPS *//*
+                        startLocation_service();
+                }
+                else
+                    Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();*/
+            }
+        });
+        /*stop_GPSservice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                *//* User Location Service *//*
+                if(isMyServiceRunning(GpsLocationService.class)){
+                    stopLocation_service();
+                }
+                else
+                    Toast.makeText(getApplicationContext(), "The service is Already Stopped", Toast.LENGTH_SHORT).show();
+            }
+        });*/
+
+
+        /* Preferences */
+        permissionPreferences = getSharedPreferences("permissionPreferences ", MODE_PRIVATE);
+        isFirstPermissionLocationRequest = permissionPreferences.getBoolean("isFirstPermissionLocationRequest", true);
 
     }
 
@@ -223,6 +241,9 @@ public class ActivityMain extends AppCompatActivity {
 
     /* Permissions */
 
+
+
+
     // Request Permission
     public void location_permission() {
         /*
@@ -234,35 +255,65 @@ public class ActivityMain extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED /*&&
                 ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED*/) {
 
-            // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(ActivityMain.this,
-                    Manifest.permission.READ_CONTACTS) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(ActivityMain.this,
-                            Manifest.permission.ACCESS_FINE_LOCATION) ){
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                Toast.makeText(this, "The location is needed to activate the location service", Toast.LENGTH_SHORT);
+            /*Permission is not granted*/
 
-            } else {
-                /* Than we have to request These permissions */
-                requestPermissions(new String[]{
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        /*Manifest.permission.READ_PHONE_STATE,*/
-                },100);
+            // Check first time requesting permission
+            if (!isFirstPermissionLocationRequest){
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
+                // Not the first time requesting
+                // Check if user said to not ask him again
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(ActivityMain.this, // NOTE: [DontShowAgain = shouldShowRequestPermissionRationale]
+                        Manifest.permission.ACCESS_FINE_LOCATION ) &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(ActivityMain.this,
+                                Manifest.permission.ACCESS_COARSE_LOCATION)){
+                    // Dont show again
+                    // Explain the need of this permission
+                    new AlertDialog.Builder(ActivityMain.this)
+                            .setMessage("To use this Feature you need to enable Location Permission")
+                            .setTitle("Feature requested")
+                            .setPositiveButton("Permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                            intent.setData(uri);
+                                            startActivity(intent);
+                                        }
+                                    }
+                            )
+                            .setNegativeButton("Cancel",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User cancelled the dialog
+                                            dialog.dismiss();
+                                        }
+                                    }
+                            )
+                            .create()
+                            .show();
+                }
+            }else {
+
+                // First time Requesting
+                // Will no more be the first request later
+                SharedPreferences.Editor editor = permissionPreferences.edit();
+                editor.putBoolean("isFirstPermissionLocationRequest", false);
+                isFirstPermissionLocationRequest = false;
+                editor.apply();
             }
 
+            // Request the permission
+            requestPermissions(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    /*Manifest.permission.READ_PHONE_STATE,*/
+            },100);
 
+        }else{
+            /*Permission is granted*/
         }
-        /*
-         * You can use the feature
-         */
     }
     // Result Permission
     @Override
@@ -280,7 +331,7 @@ public class ActivityMain extends AppCompatActivity {
                  * You can use the Application
                  */
             }else {
-
+                /*location_permission();*/
                 /* disable the feature if actif */
                 if (isMyServiceRunning(GpsLocationService.class)){
                     stopLocation_service();
