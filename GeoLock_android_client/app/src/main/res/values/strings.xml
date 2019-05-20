@@ -1,4 +1,10 @@
 <resources>
+    <!-- Application-->
     <string name="app_name">GeoApp_Client</string>
     <string name="title_activity_main">MainActivity</string>
+
+    <!-- Notification-->
+    <string name="channel_name">notification_status</string>
+    <string name="channel_description">notify the user with location service state </string>
+    <string name="channel_id">C28</string>
 </resources>

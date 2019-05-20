@@ -1,10 +1,12 @@
 package net.zexes_g.demontrack;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -33,10 +35,9 @@ import java.util.Iterator;
 
 public class GpsLocationService extends Service implements LocationListener ,GpsStatus.Listener{
 
-      ///////////////
-     // Attribute //
-    ///////////////
-
+    /**
+     * Attributes
+     */
     /* Refresh params */
     private int TIME_REFRESH = 1000 * 3; /* 1000 ms = 1s */
     private int DISTANCE_REFRESH = 0;    /* 0 m */
@@ -46,7 +47,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     private String GPS_PROVIDER = LocationManager.GPS_PROVIDER;
 
     /* Data */
-    private String IMEI, satel;
+    private String IMEI, satel= "";
 
     /* Intents */
     private Intent networkLocationService;
@@ -57,18 +58,18 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     /* Notification */
     NotificationManager notificationManager;
     NotificationCompat.Builder notifyBuilder;
-    //----------------------------------------------------------------------------------------------
+    String CHANNEL_ID = "C28";
 
-      ////////////////////////
-     // Service Life Cycle //
-    ////////////////////////
 
+    /**
+     * Lyfe Cycle
+     */
     /* Create Service */
     @Override
     public void onCreate() {
 
         /* Initialise components */
-        init();
+        initialise_components();
     }
 
     /** The service is starting, due to a call to startService() */
@@ -129,14 +130,15 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
                 getApplicationContext(), 1, restartService,
                 PendingIntent.FLAG_ONE_SHOT);
     }
-    //----------------------------------------------------------------------------------------------
 
 
-      ///////////////
-     // Listeners //
-    ///////////////
 
-    /* Location listener */
+    /**
+     * Methodes
+     */
+    /* Location */
+
+    // GPS Location
     @Override
     public void onLocationChanged(Location location) {
 
@@ -175,6 +177,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
+    // GPS provider
     @Override
     public void onProviderEnabled(String provider) {
         gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
@@ -190,7 +193,6 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     }
     @Override
     public void onProviderDisabled(String provider) {
-
         if (gps_locationManager != null){
             gps_locationManager.removeGpsStatusListener(this);
         }
@@ -203,8 +205,7 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         notifyBuilder.setContentText("GPS or Network disabled. In Stand-by ...");
         notificationManager.notify(1, notifyBuilder.build());
     }
-
-    /* Gps status listener */
+    // Gps status
     @Override
     public void onGpsStatusChanged(int event) {
         GpsStatus gpsStatus = gps_locationManager.getGpsStatus(null);
@@ -246,15 +247,12 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
 
         }
     }
-    //----------------------------------------------------------------------------------------------
 
 
-      //////////////
-     // Methodes //
-    //////////////
+    /* Initialisation */
 
-    /* Initialise the components */
-    private void init() {
+    // Initialise the components
+    private void initialise_components() {
 
         /* Get an instance for the Application */
         app = (ApplicationManager) this.getApplication();
@@ -279,30 +277,45 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         init_notification();
         pop_notification();
     }
-
     /* Initialise the notification */
     private void init_notification() {
 
         /* Set the intent */
-        final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
+        final Intent emptyIntent = new Intent(this, ActivityMain.class); // used to handle exeption in PendingIntent.getActivity
+        emptyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 1, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         /* Build notification */
-        notifyBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_name)
-                        .setContentTitle("Tracker On")
-                        .setContentText("Sending Location ...")
-                        .setContentIntent(pendingIntent)
-                        .setOngoing(true)
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-    }
+        notifyBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setContentTitle("Tracker On")
+                .setContentText("Location Service is working ...")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
+
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+    }
     /* Pop the notification */
     private void pop_notification() {
         /* Activate Notification */
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notifyBuilder.build());
     }
-    //----------------------------------------------------------------------------------------------
+
 }

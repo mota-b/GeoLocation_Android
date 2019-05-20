@@ -3,6 +3,7 @@ package net.zexes_g.demontrack;
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -53,13 +55,15 @@ public class ActivityMain extends AppCompatActivity {
     /* Notification */
     NotificationManager notificationManager;
     NotificationCompat.Builder notifyBuilder;
+    String CHANNEL_ID = "C28";
 
     /* Permission codes */
-    int LOCATION_PERMISSION_CODE = 100;
+    int PERMISSION_CODE = 100;
+    boolean isPermissionGranted;
 
     /* Other */
     SharedPreferences permissionPreferences;
-    boolean isFirstPermissionLocationRequest;
+    boolean isFirstPermissionRequest = false;
 
 
     /**
@@ -75,7 +79,7 @@ public class ActivityMain extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         /* Set layouta */
-        setContentView(R.layout.activity_perms_and_go);
+        setContentView(R.layout.activity_main);
 
         /* Initialise Components */
         initialise_ui();
@@ -99,8 +103,6 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-
     }
 
     @Override
@@ -127,8 +129,7 @@ public class ActivityMain extends AppCompatActivity {
     /**
      * Methodes
      */
-
-    /* This activity */
+    /* Initialisation */
 
     // Initialise the ui components
     private void initialise_ui() {
@@ -143,44 +144,52 @@ public class ActivityMain extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                /*Request location permission*/
+                /* Request location permission*/
                 location_permission();
 
-                /* User Location Service */
-                /*if(!isMyServiceRunning(GpsLocationService.class)){
+                /* Ckeck the location permission */
+                if (isPermissionGranted) {
+                    // The permission is granted
+                    // Check if the GPS location service is running
+                    if (!isMyServiceRunning(GpsLocationService.class)) {
 
-                    *//* Is GPS On *//*
-                    LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-                    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-
-                        *//* Ask for GPS *//*
-                        Intent gps = new Intent(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        startActivityForResult(gps,1);
+                        // GPS service is not running
+                        // Check the GPS Provider is ON/OFF
+                        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                            // Ask for GPS Provider manual activation
+                            Intent gps_provider = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            gps_provider.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivityForResult(gps_provider , 1);
+                        } else{
+                            // Start GPS Location Service
+                            startLocation_service();
+                        }
                     }
-                    else
-                        *//* Start GPS *//*
-                        startLocation_service();
+                    else {
+                        // GPS service is already running
+                        Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();
+                    }
                 }
-                else
-                    Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();*/
+
             }
         });
-        /*stop_GPSservice.setOnClickListener(new View.OnClickListener() {
+        stop_GPSservice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                *//* User Location Service *//*
+                /* User Location Service */
                 if(isMyServiceRunning(GpsLocationService.class)){
                     stopLocation_service();
                 }
                 else
                     Toast.makeText(getApplicationContext(), "The service is Already Stopped", Toast.LENGTH_SHORT).show();
             }
-        });*/
+        });
 
 
         /* Preferences */
         permissionPreferences = getSharedPreferences("permissionPreferences ", MODE_PRIVATE);
-        isFirstPermissionLocationRequest = permissionPreferences.getBoolean("isFirstPermissionLocationRequest", true);
+        isFirstPermissionRequest = permissionPreferences.getBoolean("isFirstPermissionRequest", true);
 
     }
 
@@ -199,7 +208,7 @@ public class ActivityMain extends AppCompatActivity {
     }
     // Start User Location Service
     private void startLocation_service() {
-        startService(new Intent(this, GpsLocationService.class));
+        startService(new Intent(getApplicationContext(), GpsLocationService.class));
         this.finish();
     }
     // Stop User Location Service
@@ -210,23 +219,41 @@ public class ActivityMain extends AppCompatActivity {
 
         /* Notify Stop Service*/
 
+        // Activate Notification
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         // Set the intent
         final Intent emptyIntent = new Intent(); // used to handle exeption in PendingIntent.getActivity
         PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 2, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Build notification
         notifyBuilder =
-                new NotificationCompat.Builder(this)
+                new NotificationCompat.Builder(this, CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_stat_stop)
                         .setContentTitle("Tracker Off")
                         .setContentText("Stoped Location Service")
                         .setContentIntent(pendingIntent)
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        // Activate Notification
-        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+
+        // Pop the notification
         notificationManager.notify(2, notifyBuilder.build());
 
     }
-    // Result ask GPS
+    // Result ask GPS activation
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -241,9 +268,6 @@ public class ActivityMain extends AppCompatActivity {
 
     /* Permissions */
 
-
-
-
     // Request Permission
     public void location_permission() {
         /*
@@ -252,13 +276,13 @@ public class ActivityMain extends AppCompatActivity {
          */
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED /*&&
-                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED*/) {
+                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED) {
 
             /*Permission is not granted*/
 
             // Check first time requesting permission
-            if (!isFirstPermissionLocationRequest){
+            if (!isFirstPermissionRequest){
 
                 // Not the first time requesting
                 // Check if user said to not ask him again
@@ -269,8 +293,14 @@ public class ActivityMain extends AppCompatActivity {
                     // Dont show again
                     // Explain the need of this permission
                     new AlertDialog.Builder(ActivityMain.this)
-                            .setMessage("To use this Feature you need to enable Location Permission")
-                            .setTitle("Feature requested")
+                            .setMessage("To use this Feature you need to enable The following Permissions" +
+                                    "\n* Location: User in the GPS Service" +
+                                    "\n* Phone State: Used to authentify your device by EMAI")
+                            .setIcon(R.drawable.ic_location_on_black_24dp)
+
+                   /* dialog.requestWindowFeature(Window.FEATURE_LEFT_ICON);
+                    dialog.setFeatureDrawableResource(Window.FEATURE_LEFT_ICON, R.drawable.your_icon); */
+                            .setTitle("Permission requested")
                             .setPositiveButton("Permissions",
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
@@ -294,13 +324,14 @@ public class ActivityMain extends AppCompatActivity {
                             .create()
                             .show();
                 }
-            }else {
+            }
+            else {
 
                 // First time Requesting
                 // Will no more be the first request later
                 SharedPreferences.Editor editor = permissionPreferences.edit();
-                editor.putBoolean("isFirstPermissionLocationRequest", false);
-                isFirstPermissionLocationRequest = false;
+                editor.putBoolean("isFirstPermissionRequest", false);
+                isFirstPermissionRequest = false;
                 editor.apply();
             }
 
@@ -308,11 +339,12 @@ public class ActivityMain extends AppCompatActivity {
             requestPermissions(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    /*Manifest.permission.READ_PHONE_STATE,*/
-            },100);
+                    Manifest.permission.READ_PHONE_STATE,
+            },PERMISSION_CODE);
 
         }else{
-            /*Permission is granted*/
+            /* Permission is granted */
+            isPermissionGranted = true;
         }
     }
     // Result Permission
@@ -321,22 +353,15 @@ public class ActivityMain extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         /* If it's our request */
-        if(requestCode == LOCATION_PERMISSION_CODE ){
+        if(requestCode == PERMISSION_CODE ){
             /* If the permissions are GRANTED */
             if(grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == PackageManager.PERMISSION_GRANTED ){
-
-                /*
-                 * You can use the Application
-                 */
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED){
+                // Positif responce to the Anroid request Dialog
             }else {
-                /*location_permission();*/
-                /* disable the feature if actif */
-                if (isMyServiceRunning(GpsLocationService.class)){
-                    stopLocation_service();
-                }
-
+                // Negatif responce to the Anroid request Dialog
             }
         }
     }
