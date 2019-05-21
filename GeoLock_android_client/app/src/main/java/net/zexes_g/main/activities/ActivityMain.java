@@ -104,7 +104,6 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        startLocation_service();
     }
 
     @Override

@@ -32,6 +32,9 @@ public class ApplicationManager extends Application {
             options.reconnection = true;
             JSONObject postData = new JSONObject();
 
+            String socket_link = "https://47eb52cc.ngrok.io";
+            String socket_nsp = "/crowd";
+            String socket_url = socket_link + socket_nsp;
             String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnRpdHlfbmFtZSI6Ik1vdGEiLCJlbnRpdHlfdHlwZSI6IlNtYXJ0cGhvbmUiLCJlbnRpdHlfbWFjIjoiYzA6Yzk6NzY6Mjg6M2E6OTUiLCJjX21hbmFnZXIiOiI1Y2RiYTY4ZmUxZTZlMzBhOTk4YTI5ZmQiLCJvcGVyYXRvciI6IjVjZGJhNmNmZTFlNmUzMGE5OThhMjlmZSIsInBvb2xfbmFtZSI6InAxIiwiaWF0IjoxNTU4MzUyNzQxfQ.-vNREU4eBJYT30A82-iMIS2IicKIju12YKd5e528Jsw";
             try {
                 postData.put("token", token);
@@ -41,7 +44,7 @@ public class ApplicationManager extends Application {
             options.query = "data= "+postData;
 
 
-            mSocket = IO.socket("https://758bc672.ngrok.io/crowd", options);
+            mSocket = IO.socket(socket_url, options);
         } catch (URISyntaxException e) {}
 
     }

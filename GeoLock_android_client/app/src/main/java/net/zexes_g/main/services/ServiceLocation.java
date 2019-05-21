@@ -63,7 +63,6 @@ public class ServiceLocation extends Service {
 
     /* User data */
     String IMEI;
-    String calender;
 
 
     // NOTE
@@ -328,10 +327,10 @@ public class ServiceLocation extends Service {
         network_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         // Activate the server Socket
-//        if (gps_locationManager.isProviderEnabled(GPS_PROVIDER) || network_locationManager.isProviderEnabled(NETWORK_PROVIDER)){
-//            app.init_events();
-//            app.getSocket().connect();
-//        }
+        if (gps_locationManager.isProviderEnabled(GPS_PROVIDER) || network_locationManager.isProviderEnabled(NETWORK_PROVIDER)){
+            app.init_events();
+            app.getSocket().connect();
+        }
 
         // Get the IMEI
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -388,26 +387,85 @@ public class ServiceLocation extends Service {
     /* Other */
     public void useLocation (Location location){
 
+        /* Try to reconnect when server crash */
+        if(!app.getSocket().connected())
+            app.getSocket().connect();
+
+        /* Gathering Location data */
+        String provider = location.getProvider();
+        String curent_satellites = satellites;
+
+        String latitude = location.getLatitude() +"";
+        String longitude = location.getLongitude() +"";
+
+        String altitude = location.getAltitude() +"";
+        String accuracy = location.getAccuracy() +"";
+        String speed = location.getSpeed() +"";
+
+        String time = location.getTime() +"";
+        String elapsedRealTimeNanostime = location.getElapsedRealtimeNanos() +"";
+
+        String bearing = location.getBearing() +"";
+        String extras = location.getExtras() +"";
+
+        String date = android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date()) +"";
+
+        /* Log the location data*/
         System.out.println("\n\n !! "+location.getProvider()+" location !!"+
-                "\nprovider : "+location.getProvider()+
-                "\nsatellites : "+satellites+
+                "\nprovider : "+provider+
+                "\ncurent_satellites : "+curent_satellites+
 
-                "\nlat : "+location.getLatitude()+
-                "\nlon : "+location.getLongitude()+
+                "\nlat : "+latitude+
+                "\nlon : "+longitude+
 
-                "\nAltitude : "+location.getAltitude()+
-                "\nAccuracy : "+location.getAccuracy()+
-                "\nSpeed : "+location.getSpeed()+
+                "\nAltitude : "+altitude+
+                "\nAccuracy : "+accuracy+
+                "\nSpeed : "+speed+
 
-                "\nTime : "+location.getTime()+
-                "\nElapsedRealtimeNanos = "+location.getElapsedRealtimeNanos()+
+                "\nTime : "+time+
+                "\nElapsedRealtimeNanos = "+elapsedRealTimeNanostime+
 
-                "\nBearing : "+location.getBearing()+
-                "\nExtras : "+location.getExtras()+
+                "\nBearing : "+bearing+
+                "\nExtras : "+extras+
 
 
-                "\ndate: "+ android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date())
+                "\ndate: "+ date
         );
+
+        /* Send the Location data */
+        JSONObject server_data = new JSONObject();
+        try {
+
+            // User Json data
+            server_data.accumulate("imei", IMEI);
+            server_data.accumulate("manufacture", Build.MANUFACTURER);
+            server_data.accumulate("model", Build.MODEL);
+
+            // location Json data
+            server_data.accumulate("provider", provider);
+            server_data.accumulate("curent_satellites", curent_satellites);
+
+            server_data.accumulate("latLon", latitude);
+            server_data.accumulate("latLon", longitude);
+
+            server_data.accumulate("altitude", altitude);
+            server_data.accumulate("accuracy", accuracy);
+            server_data.accumulate("speed", speed);
+
+            server_data.accumulate("time", time);
+            server_data.accumulate("elapsedRealTimeNanostime", elapsedRealTimeNanostime);
+
+            server_data.accumulate("date", date);
+
+            if( (provider.equals("network")) ||
+                    ( (provider.equals("gps")) && !curent_satellites.equals("N/A") && !curent_satellites.equals("0/0")) ){
+
+                app.getSocket().emit("entity_location", server_data);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
