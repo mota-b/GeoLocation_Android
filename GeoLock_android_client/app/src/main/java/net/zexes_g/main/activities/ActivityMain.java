@@ -1,4 +1,4 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.main.activities;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -19,17 +18,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
+
+import net.zexes_g.demontrack.R;
+import net.zexes_g.main.services.ServiceGpsLocation;
+import net.zexes_g.main.services.ServiceLocation;
 
 public class ActivityMain extends AppCompatActivity {
 
@@ -103,6 +104,7 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startLocation_service();
     }
 
     @Override
@@ -151,7 +153,8 @@ public class ActivityMain extends AppCompatActivity {
                 if (isPermissionGranted) {
                     // The permission is granted
                     // Check if the GPS location service is running
-                    if (!isMyServiceRunning(GpsLocationService.class)) {
+//                    if (!isMyServiceRunning(ServiceGpsLocation.class)) {
+                    if (!isMyServiceRunning(ServiceLocation.class)) {
 
                         // GPS service is not running
                         // Check the GPS Provider is ON/OFF
@@ -178,7 +181,8 @@ public class ActivityMain extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-                if(isMyServiceRunning(GpsLocationService.class)){
+//                if(isMyServiceRunning(ServiceGpsLocation.class)){
+                if(isMyServiceRunning(ServiceLocation.class)){
                     stopLocation_service();
                 }
                 else
@@ -208,14 +212,16 @@ public class ActivityMain extends AppCompatActivity {
     }
     // Start User Location Service
     private void startLocation_service() {
-        startService(new Intent(getApplicationContext(), GpsLocationService.class));
+//        startService(new Intent(getApplicationContext(), ServiceGpsLocation.class));
+        startService(new Intent(getApplicationContext(), ServiceLocation.class));
         this.finish();
     }
     // Stop User Location Service
     private void stopLocation_service() {
 
         /* Stop Service */
-        stopService( new Intent(this, GpsLocationService.class));
+//        stopService( new Intent(this, ServiceGpsLocation.class));
+        stopService( new Intent(this, ServiceLocation.class));
 
         /* Notify Stop Service*/
 
@@ -276,7 +282,7 @@ public class ActivityMain extends AppCompatActivity {
          */
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+//                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED) {
 
             /*Permission is not granted*/
@@ -338,7 +344,7 @@ public class ActivityMain extends AppCompatActivity {
             // Request the permission
             requestPermissions(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.READ_PHONE_STATE,
             },PERMISSION_CODE);
 
@@ -357,8 +363,8 @@ public class ActivityMain extends AppCompatActivity {
             /* If the permissions are GRANTED */
             if(grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[2] == PackageManager.PERMISSION_GRANTED){
+                    grantResults[1] == PackageManager.PERMISSION_GRANTED /*&&
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED*/){
                 // Positif responce to the Anroid request Dialog
             }else {
                 // Negatif responce to the Anroid request Dialog

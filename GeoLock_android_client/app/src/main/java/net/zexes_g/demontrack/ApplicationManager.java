@@ -24,8 +24,24 @@ public class ApplicationManager extends Application {
 
     private static Socket mSocket;
     {
+
+
         try {
-            mSocket = IO.socket("http://geo.ngrok.io");
+            IO.Options options = new IO.Options();
+//            options.sslContext = SSLContext.getDefault();
+            options.reconnection = true;
+            JSONObject postData = new JSONObject();
+
+            String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnRpdHlfbmFtZSI6Ik1vdGEiLCJlbnRpdHlfdHlwZSI6IlNtYXJ0cGhvbmUiLCJlbnRpdHlfbWFjIjoiYzA6Yzk6NzY6Mjg6M2E6OTUiLCJjX21hbmFnZXIiOiI1Y2RiYTY4ZmUxZTZlMzBhOTk4YTI5ZmQiLCJvcGVyYXRvciI6IjVjZGJhNmNmZTFlNmUzMGE5OThhMjlmZSIsInBvb2xfbmFtZSI6InAxIiwiaWF0IjoxNTU4MzUyNzQxfQ.-vNREU4eBJYT30A82-iMIS2IicKIju12YKd5e528Jsw";
+            try {
+                postData.put("token", token);
+            }catch (Exception e){}
+
+            options.secure = true;
+            options.query = "data= "+postData;
+
+
+            mSocket = IO.socket("https://758bc672.ngrok.io/crowd", options);
         } catch (URISyntaxException e) {}
 
     }

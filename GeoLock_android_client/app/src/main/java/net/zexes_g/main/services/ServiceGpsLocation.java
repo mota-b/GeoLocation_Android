@@ -1,12 +1,13 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.main.services;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.content.pm.PackageManager;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -18,10 +19,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import net.zexes_g.demontrack.ApplicationManager;
-import net.zexes_g.demontrack.NetworkLocationService;
+import net.zexes_g.demontrack.R;
+import net.zexes_g.main.activities.ActivityMain;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +37,7 @@ import java.util.Iterator;
  * Created by zexes-g on 06/04/17.
  */
 
-public class GpsLocationService extends Service implements LocationListener ,GpsStatus.Listener{
+public class ServiceGpsLocation extends Service implements LocationListener, GpsStatus.Listener{
 
     /**
      * Attributes
@@ -76,10 +80,17 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        /* Activate the listeners */
-        gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
-        gps_locationManager.addGpsStatusListener(this);
-        return startId;
+
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+
+            /* Activate the listeners */
+            gps_locationManager.requestLocationUpdates(GPS_PROVIDER, TIME_REFRESH, DISTANCE_REFRESH,this);
+            gps_locationManager.addGpsStatusListener(this);
+
+        }
+          return startId;
     }
 
     /* When a client Rebinf to the service */
@@ -152,12 +163,17 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             networkLocationService = null;
         }
 
+        Log.d("AAAAA", "latLon: " + location.getLatitude());
+        Log.d("AAAAA", "latLon: " + location.getLongitude());
+
         /* Get data */
         String calender = "" + android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date());
 
         /* Send data */
         JSONObject server_data = new JSONObject();
         try {
+
+
             server_data.accumulate("imei", IMEI);
             server_data.accumulate("model", Build.MANUFACTURER);
             server_data.accumulate("model", Build.MODEL);
@@ -169,7 +185,8 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
             server_data.accumulate("calender", calender);
 
             if(!satel.equals(""))
-                app.getSocket().emit("client_data",server_data);
+                app.getSocket().emit("entity_location",server_data);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -180,8 +197,14 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     // GPS provider
     @Override
     public void onProviderEnabled(String provider) {
-        gps_locationManager.requestLocationUpdates(GPS_PROVIDER,TIME_REFRESH,DISTANCE_REFRESH,this);
-        gps_locationManager.addGpsStatusListener(this);
+
+//        if (Build.VERSION.SDK_INT >= 23 &&
+//                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+//                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED ) {
+
+            gps_locationManager.requestLocationUpdates(GPS_PROVIDER, TIME_REFRESH, DISTANCE_REFRESH, this);
+            gps_locationManager.addGpsStatusListener(this);
+//        }
 
         /* Reacticate socket */
         app.init_events();
@@ -198,8 +221,8 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         }
 
         /* Desactivate socket */
-        app.getSocket().disconnect();
-        app.kill_events();
+//        app.getSocket().disconnect();
+//        app.kill_events();
 
         /* Update notification */
         notifyBuilder.setContentText("GPS or Network disabled. In Stand-by ...");
@@ -208,44 +231,55 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
     // Gps status
     @Override
     public void onGpsStatusChanged(int event) {
-        GpsStatus gpsStatus = gps_locationManager.getGpsStatus(null);
 
-        /* If gps is on */
-        if(gpsStatus != null) {
+//        if (Build.VERSION.SDK_INT >= 23 &&
+//                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+//                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED ) {
 
-            /* From Gps satellite get Iterable Satellites Objects */
-            Iterable<GpsSatellite>satellites = gpsStatus.getSatellites();
-            Iterator<GpsSatellite> sat = satellites.iterator();
+            GpsStatus gpsStatus = gps_locationManager.getGpsStatus(null);
 
-            /* The satellites list */
-            String lSatellites = null;
+            /* If gps is on */
+            if (gpsStatus != null) {
 
-            /* Counters */
-            int nb_sat_found = 0;
-            int nb_sat_used = 0;
+                /* From Gps satellite get Iterable Satellites Objects */
+                Iterable<GpsSatellite> satellites = gpsStatus.getSatellites();
+                Iterator<GpsSatellite> sat = satellites.iterator();
 
-            /* Iterate on satellites */
-            while (sat.hasNext()) {
-                GpsSatellite satellite = sat.next();
-                lSatellites = "";
-                if(satellite.usedInFix())
-                    lSatellites += (nb_sat_used++);
+                /* The satellites list */
+                String lSatellites = null;
+
+                /* Counters */
+                int nb_sat_found = 0;
+                int nb_sat_used = 0;
+
+                /* Iterate on satellites */
+                while (sat.hasNext()) {
+                    GpsSatellite satellite = sat.next();
+                    lSatellites = "";
+                    if (satellite.usedInFix())
+                        lSatellites += (nb_sat_used++);
+                    else
+                        lSatellites += (nb_sat_used);
+                    lSatellites += "/" + (nb_sat_found++);
+                }
+
+                /* Use the NetworkLocation service if no satellite used to fix location*/
+                if (nb_sat_used == 0 && networkLocationService == null) {
+                    networkLocationService = new Intent(this, ServiceNetworkLocation.class);
+                    startService(networkLocationService);
+                }
+                if (nb_sat_used != 0)
+                    satel = "" + lSatellites;
                 else
-                    lSatellites += (nb_sat_used);
-                lSatellites += "/"+(nb_sat_found++) ;
+                    satel = "";
+
+                Log.d("AAAA", "nbsat found: "+ nb_sat_found);
+                Log.d("AAAA", "nbsat used: "+ nb_sat_used);
+                Log.d("AAAA", "satel: "+ satel);
             }
 
-            /* Use the NetworkLocation service if no satellite used to fix location*/
-            if(nb_sat_used == 0 && networkLocationService == null){
-                networkLocationService = new Intent(this, NetworkLocationService.class);
-                startService(networkLocationService);
-            }
-            if(nb_sat_used != 0)
-                satel = "" + lSatellites;
-            else
-                satel = "";
 
-        }
+//        }
     }
 
 
@@ -257,10 +291,12 @@ public class GpsLocationService extends Service implements LocationListener ,Gps
         /* Get an instance for the Application */
         app = (ApplicationManager) this.getApplication();
 
-        /* Get the IMEI */
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        IMEI = "" + telephonyManager.getDeviceId();
-
+//        if (Build.VERSION.SDK_INT >= 23 &&
+//                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager.PERMISSION_GRANTED ){
+            /* Get the IMEI */
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            IMEI = "" + telephonyManager.getDeviceId();
+//        }
         /* Set the network Location Service intent */
         networkLocationService = null;
 

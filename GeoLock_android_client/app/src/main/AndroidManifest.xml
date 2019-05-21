@@ -3,13 +3,16 @@
     package="net.zexes_g.demontrack">
 
     <!-- Permissions -->
+
     <!-- PROTECTION_NORMAL (No need user interaction) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <!-- Need user interaction -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
@@ -20,10 +23,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <!-- Activities-->
+        <service
+            android:name="net.zexes_g.main.services.ServiceLocation"
+            android:enabled="true"
+            android:exported="true"></service>
+        <!-- Activities -->
         <activity
-            android:name=".ActivityMain"
+            android:name="net.zexes_g.main.activities.ActivityMain"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -32,23 +38,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name=".Activity_persm_and_go"
-            android:autoRemoveFromRecents="true">
-        </activity>
-
-
-        <!-- Services -->
+            android:name="net.zexes_g.main.activities.Activity_persm_and_go"
+            android:autoRemoveFromRecents="true"></activity> <!-- Services -->
         <service
-            android:name=".GpsLocationService"
+            android:name="net.zexes_g.main.services.ServiceGpsLocation"
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name=".NetworkLocationService"
+            android:name="net.zexes_g.main.services.ServiceNetworkLocation"
             android:enabled="true"
-            android:exported="true" /> <!-- Activities -->
-
+            android:exported="true" />
     </application>
 
 </manifest>

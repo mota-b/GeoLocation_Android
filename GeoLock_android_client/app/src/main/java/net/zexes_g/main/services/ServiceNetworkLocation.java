@@ -1,4 +1,4 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.main.services;
 
 import android.app.Service;
 import android.content.Context;
@@ -12,12 +12,14 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
+import net.zexes_g.demontrack.ApplicationManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-public class NetworkLocationService extends Service implements LocationListener {
+public class ServiceNetworkLocation extends Service implements LocationListener {
 
       ///////////////
      // Attribute //

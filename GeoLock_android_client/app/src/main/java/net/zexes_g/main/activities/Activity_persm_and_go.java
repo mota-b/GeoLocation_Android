@@ -1,4 +1,4 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.main.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,7 +21,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import net.zexes_g.demontrack.GpsLocationService;
+import net.zexes_g.demontrack.R;
+import net.zexes_g.main.services.ServiceGpsLocation;
 
 public class Activity_persm_and_go extends Activity {
 
@@ -202,7 +203,7 @@ public class Activity_persm_and_go extends Activity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-                if(!isMyServiceRunning(GpsLocationService.class)){
+                if(!isMyServiceRunning(ServiceGpsLocation.class)){
 
                     /* Is GPS On */
                     LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
@@ -225,7 +226,7 @@ public class Activity_persm_and_go extends Activity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-                if(isMyServiceRunning(GpsLocationService.class)){
+                if(isMyServiceRunning(ServiceGpsLocation.class)){
                     stopLocation_service();
                 }
                 else
@@ -248,7 +249,7 @@ public class Activity_persm_and_go extends Activity {
 
     /* Start User Location Service */
     private void startLocation_service() {
-        startService(new Intent(this, GpsLocationService.class));
+        startService(new Intent(this, ServiceGpsLocation.class));
         this.finish();
     }
 
@@ -256,7 +257,7 @@ public class Activity_persm_and_go extends Activity {
     private void stopLocation_service() {
 
         /* Stop Service */
-        stopService( new Intent(this, GpsLocationService.class));
+        stopService( new Intent(this, ServiceGpsLocation.class));
 
         /* notify */
         init_notification();
