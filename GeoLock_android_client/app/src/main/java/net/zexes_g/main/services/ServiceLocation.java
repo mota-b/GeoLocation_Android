@@ -1,13 +1,12 @@
 package net.zexes_g.main.services;
 
-import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -19,11 +18,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import net.zexes_g.demontrack.ApplicationManager;
+import net.zexes_g.main.Utility.ApplicationManager;
 import net.zexes_g.demontrack.R;
 import net.zexes_g.main.activities.ActivityMain;
 
@@ -63,6 +61,7 @@ public class ServiceLocation extends Service {
 
     /* User data */
     String IMEI;
+
 
 
     // NOTE
@@ -320,7 +319,9 @@ public class ServiceLocation extends Service {
     private void initialise_components() {
 
         // Get an instance for the Application
+//        app = new ApplicationManager (getApplicationContext());
         app = (ApplicationManager) this.getApplication();
+        app.reloadData();
 
         // Initialise the location managers
         gps_locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
@@ -335,6 +336,15 @@ public class ServiceLocation extends Service {
         // Get the IMEI
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         IMEI = "" + telephonyManager.getDeviceId();
+
+
+//        /* Get preferences */
+//        deviceRegistrationPreferences = getApplicationContext().getSharedPreferences("deviceRegistrationPreferences", MODE_PRIVATE);
+//        TOKEN = deviceRegistrationPreferences.getString("token", "");
+//        SERVER_URL = deviceRegistrationPreferences.getString("server_url", "");
+//
+//        Log.d("AAAA", TOKEN );
+//        Log.d("AAAA", SERVER_URL );
 
         // Initialise & Pop notification
         init_notification();
@@ -468,5 +478,6 @@ public class ServiceLocation extends Service {
         }
 
     }
+
 
 }

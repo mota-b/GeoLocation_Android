@@ -1,10 +1,16 @@
-package net.zexes_g.demontrack;
+package net.zexes_g.main.Utility;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.util.Log;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+
+import net.zexes_g.main.services.ServiceLocation;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,32 +28,62 @@ public class ApplicationManager extends Application {
      // Attribute //
     ///////////////
 
+    /* Preferneces */
+    SharedPreferences deviceRegistrationPreferences;
+    String TOKEN;
+    String SERVER_URL;
+    String socket_nsp = "/crowd";
+
     private static Socket mSocket;
-    {
+
+    public void reloadData(){
+        /* Get preferences */
+        deviceRegistrationPreferences = getApplicationContext().getSharedPreferences("deviceRegistrationPreferences", MODE_PRIVATE);
+        TOKEN = deviceRegistrationPreferences.getString("token", "");
+        SERVER_URL = deviceRegistrationPreferences.getString("server_url", "");
+        Log.d("AAAA", TOKEN);
+        Log.d("AAAA", SERVER_URL);
 
 
-        try {
-            IO.Options options = new IO.Options();
-//            options.sslContext = SSLContext.getDefault();
-            options.reconnection = true;
-            JSONObject postData = new JSONObject();
+        {
 
-            String socket_link = "https://47eb52cc.ngrok.io";
-            String socket_nsp = "/crowd";
-            String socket_url = socket_link + socket_nsp;
-            String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnRpdHlfbmFtZSI6Ik1vdGEiLCJlbnRpdHlfdHlwZSI6IlNtYXJ0cGhvbmUiLCJlbnRpdHlfbWFjIjoiYzA6Yzk6NzY6Mjg6M2E6OTUiLCJjX21hbmFnZXIiOiI1Y2RiYTY4ZmUxZTZlMzBhOTk4YTI5ZmQiLCJvcGVyYXRvciI6IjVjZGJhNmNmZTFlNmUzMGE5OThhMjlmZSIsInBvb2xfbmFtZSI6InAxIiwiaWF0IjoxNTU4MzUyNzQxfQ.-vNREU4eBJYT30A82-iMIS2IicKIju12YKd5e528Jsw";
+
             try {
-                postData.put("token", token);
-            }catch (Exception e){}
+                IO.Options options = new IO.Options();
+                options.reconnection = true;
+                options.secure = true;
 
-            options.secure = true;
-            options.query = "data= "+postData;
+                /*JSon Query for socket hand shake*/
+                JSONObject jsonQuery= new JSONObject();
+                try {
+                    jsonQuery.accumulate("token", TOKEN);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
 
-            mSocket = IO.socket(socket_url, options);
-        } catch (URISyntaxException e) {}
+
+                String socket_url = SERVER_URL + socket_nsp;
+
+                options.query = "data= "+ jsonQuery;
+
+
+                mSocket = IO.socket(socket_url, options);
+            } catch (URISyntaxException e) {}
+
+        }
+    }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+
+
+
+       reloadData();
 
     }
+
     Emitter.Listener onGet_something;
     //----------------------------------------------------------------------------------------------
 

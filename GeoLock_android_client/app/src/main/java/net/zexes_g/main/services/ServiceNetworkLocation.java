@@ -12,7 +12,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
-import net.zexes_g.demontrack.ApplicationManager;
+import net.zexes_g.main.Utility.ApplicationManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;

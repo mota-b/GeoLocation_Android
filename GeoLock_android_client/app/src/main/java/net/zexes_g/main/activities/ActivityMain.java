@@ -32,6 +32,7 @@ import net.zexes_g.demontrack.R;
 import net.zexes_g.main.services.ServiceGpsLocation;
 import net.zexes_g.main.services.ServiceLocation;
 
+
 public class ActivityMain extends AppCompatActivity {
 
     /**
@@ -211,7 +212,7 @@ public class ActivityMain extends AppCompatActivity {
     }
     // Start User Location Service
     private void startLocation_service() {
-//        startService(new Intent(getApplicationContext(), ServiceGpsLocation.class));
+
         startService(new Intent(getApplicationContext(), ServiceLocation.class));
         this.finish();
     }
@@ -372,4 +373,8 @@ public class ActivityMain extends AppCompatActivity {
     }
 
 
+    /* Other */
+    public void scanQR(View v){
+        startActivity(new Intent(ActivityMain.this, ActivityQRC.class));
+    }
 }

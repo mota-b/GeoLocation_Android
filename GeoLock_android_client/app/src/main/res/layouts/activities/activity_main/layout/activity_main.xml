@@ -13,7 +13,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="30"
+            android:layout_weight="25"
             android:background="@color/info_area">
 
         </LinearLayout> <!-- Info layout -->
@@ -22,43 +22,45 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="60"
+            android:layout_weight="55"
             android:background="@color/buttonsService_area">
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="306dp"
+                android:layout_height="252dp"
                 android:layout_centerInParent="true">
 
                 <Button
                     android:id="@+id/go"
 
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="235dp"
+                    android:layout_height="230dp"
+
+
 
                     android:layout_centerInParent="true"
-
+                    android:layout_gravity="top|start"
                     android:background="@drawable/go_button"
                     android:fontFamily="serif-monospace"
                     android:text="Go"
                     android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                     android:textColor="@color/go_button"
-                    android:textStyle="bold"
-                    android:layout_gravity="top|start"/>
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/stop"
 
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="69dp"
+                    android:layout_height="68dp"
 
+
+
+                    android:layout_gravity="bottom|end"
                     android:background="@drawable/stop_button"
-
-                    android:text="STOP"
                     android:fontFamily="serif-monospace"
+                    android:text="STOP"
                     android:textColor="@color/go_button"
-                    android:textStyle="bold"
-                    android:layout_gravity="bottom|end"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
 
@@ -69,8 +71,24 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="10"
+            android:layout_weight="20"
             android:background="@color/updateData_area">
+            <Button
+                android:id="@+id/btnTakePicture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="QR read" />
+
+            <Button
+                android:id="@+id/btnScanBarcode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/btnTakePicture"
+                android:layout_centerHorizontal="true"
+                android:onClick="scanQR"
+                android:text="QR scan" />
 
         </LinearLayout> <!-- Data Update-->
 

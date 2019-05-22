@@ -23,7 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import net.zexes_g.demontrack.ApplicationManager;
+import net.zexes_g.main.Utility.ApplicationManager;
 import net.zexes_g.demontrack.R;
 import net.zexes_g.main.activities.ActivityMain;
 
