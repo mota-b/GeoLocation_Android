@@ -32,7 +32,7 @@ public class ApplicationManager extends Application {
     SharedPreferences deviceRegistrationPreferences;
     String TOKEN;
     String SERVER_URL;
-    String socket_nsp = "/crowd";
+    String socket_nsp = "/";
 
     private static Socket mSocket;
 

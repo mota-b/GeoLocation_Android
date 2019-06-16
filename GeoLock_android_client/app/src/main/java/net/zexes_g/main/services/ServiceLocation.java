@@ -220,7 +220,9 @@ public class ServiceLocation extends Service {
                             lSatellites += (nb_sat_used++);
                         else
                             lSatellites += (nb_sat_used);
-                        lSatellites += "/" + (nb_sat_found++);
+
+                         // Uncomment to format as SatteliteUSED/SatellitesFOUND
+//                       lSatellites += "/" + (nb_sat_found++);
                     }
 
                     /* Check if we have satellites to locate user */
@@ -409,6 +411,7 @@ public class ServiceLocation extends Service {
         String longitude = location.getLongitude() +"";
 
         String altitude = location.getAltitude() +"";
+        String asimuth = "" +""; // NOT available yet (deprecated in location manager) ==> need to use compass
         String accuracy = location.getAccuracy() +"";
         String speed = location.getSpeed() +"";
 
@@ -418,7 +421,7 @@ public class ServiceLocation extends Service {
         String bearing = location.getBearing() +"";
         String extras = location.getExtras() +"";
 
-        String date = android.text.format.DateFormat.format("EEEE;d/M/yyyy;H:m:s ",new Date()) +"";
+        String date = android.text.format.DateFormat.format("yyyy/MM/dd;HH:mm:ss",new Date()) +"";
 
         /* Log the location data*/
         System.out.println("\n\n !! "+location.getProvider()+" location !!"+
@@ -455,20 +458,21 @@ public class ServiceLocation extends Service {
             server_data.accumulate("provider", provider);
             server_data.accumulate("curent_satellites", curent_satellites);
 
-            server_data.accumulate("latLon", latitude);
-            server_data.accumulate("latLon", longitude);
+            server_data.accumulate("lat_lon", latitude);
+            server_data.accumulate("lat_lon", longitude);
 
             server_data.accumulate("altitude", altitude);
             server_data.accumulate("accuracy", accuracy);
+            server_data.accumulate("asimuth", asimuth);
             server_data.accumulate("speed", speed);
 
-            server_data.accumulate("time", time);
-            server_data.accumulate("elapsedRealTimeNanostime", elapsedRealTimeNanostime);
+//            server_data.accumulate("time", time);
+//            server_data.accumulate("elapsedRealTimeNanostime", elapsedRealTimeNanostime);
 
             server_data.accumulate("date", date);
 
             if( (provider.equals("network")) ||
-                    ( (provider.equals("gps")) && !curent_satellites.equals("N/A") && !curent_satellites.equals("0/0")) ){
+                    ( (provider.equals("gps")) && !curent_satellites.equals("N/A") && !curent_satellites.equals("0")) ){
 
                 app.getSocket().emit("entity_location", server_data);
             }
