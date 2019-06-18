@@ -470,6 +470,7 @@ public class ActivityMain extends AppCompatActivity {
         }else{
             /* Permission is granted */
             isPermission_CameraGranted = true;
+
         }
     }
 

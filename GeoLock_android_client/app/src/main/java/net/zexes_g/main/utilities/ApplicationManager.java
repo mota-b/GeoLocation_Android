@@ -32,7 +32,7 @@ public class ApplicationManager extends Application {
 
     private static Socket mSocket;
 
-    public void reloadData(){
+    public  void reloadData(){
         /* Get preferences */
         deviceRegistrationPreferences = getApplicationContext().getSharedPreferences("deviceRegistrationPreferences", MODE_PRIVATE);
         TOKEN = deviceRegistrationPreferences.getString("token", "");
