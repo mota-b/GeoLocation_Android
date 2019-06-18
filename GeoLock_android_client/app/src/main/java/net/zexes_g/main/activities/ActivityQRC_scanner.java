@@ -2,24 +2,15 @@ package net.zexes_g.main.activities;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
-import org.json.JSONArray;
+import net.zexes_g.main.utilities.CustomZXingScannerView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,9 +19,8 @@ import java.util.List;
 
 import me.dm7.barcodescanner.core.IViewFinder;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
-import static android.Manifest.permission.CAMERA;
 
-public class ActivityQRC extends Activity implements ZXingScannerView.ResultHandler {
+public class ActivityQRC_scanner extends Activity implements ZXingScannerView.ResultHandler {
     private ZXingScannerView mScannerView;
 
 
@@ -52,7 +42,7 @@ public class ActivityQRC extends Activity implements ZXingScannerView.ResultHand
 
         };    // Programmatically initialize the scanner view
 
-//        mScannerView = new ZXingScannerView(ActivityQRC.this);   // Programmatically initialize the scanner view
+//        mScannerView = new ZXingScannerView(ActivityQRC_scanner.this);   // Programmatically initialize the scanner view
         setContentView(mScannerView);                // Set the scanner view as the content view
 
         /* Scanner setting */

@@ -29,7 +29,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import net.zexes_g.demontrack.R;
-import net.zexes_g.main.services.ServiceGpsLocation;
 import net.zexes_g.main.services.ServiceLocation;
 
 
@@ -153,7 +152,7 @@ public class ActivityMain extends AppCompatActivity {
                 if (isPermissionGranted) {
                     // The permission is granted
                     // Check if the GPS location service is running
-//                    if (!isMyServiceRunning(ServiceGpsLocation.class)) {
+//                    if (!isMyServiceRunning(ServiceGpsLocation______________________.class)) {
                     if (!isMyServiceRunning(ServiceLocation.class)) {
 
                         // GPS service is not running
@@ -181,7 +180,7 @@ public class ActivityMain extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 /* User Location Service */
-//                if(isMyServiceRunning(ServiceGpsLocation.class)){
+//                if(isMyServiceRunning(ServiceGpsLocation______________________.class)){
                 if(isMyServiceRunning(ServiceLocation.class)){
                     stopLocation_service();
                 }
@@ -220,7 +219,7 @@ public class ActivityMain extends AppCompatActivity {
     private void stopLocation_service() {
 
         /* Stop Service */
-//        stopService( new Intent(this, ServiceGpsLocation.class));
+//        stopService( new Intent(this, ServiceGpsLocation______________________.class));
         stopService( new Intent(this, ServiceLocation.class));
 
         /* Notify Stop Service*/
@@ -375,6 +374,6 @@ public class ActivityMain extends AppCompatActivity {
 
     /* Other */
     public void scanQR(View v){
-        startActivity(new Intent(ActivityMain.this, ActivityQRC.class));
+        startActivity(new Intent(ActivityMain.this, ActivityQRC_scanner.class));
     }
 }

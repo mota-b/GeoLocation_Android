@@ -1,4 +1,4 @@
-package net.zexes_g.main.activities;
+package net.zexes_g.main.utilities;
 
 import android.content.Context;
 import android.content.res.Configuration;

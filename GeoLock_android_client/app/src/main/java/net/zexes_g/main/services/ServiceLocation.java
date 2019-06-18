@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -19,9 +18,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
-import net.zexes_g.main.Utility.ApplicationManager;
+import net.zexes_g.main.utilities.ApplicationManager;
 import net.zexes_g.demontrack.R;
 import net.zexes_g.main.activities.ActivityMain;
 
