@@ -53,18 +53,23 @@ public class ActivityMain extends AppCompatActivity {
     /* Buttons*/
     Button start_GPSservice;
     Button stop_GPSservice;
+    Button scan_QRCservice;
+
     /* Notification */
     NotificationManager notificationManager;
     NotificationCompat.Builder notifyBuilder;
     String CHANNEL_ID = "C28";
 
     /* Permission codes */
-    int PERMISSION_CODE = 100;
-    boolean isPermissionGranted;
+    int PERMISSION_LOCATION_CODE = 100;
+    int PERMISSION_CAMERA_CODE = 200;
+    boolean isPermission_LocationGranted;
+    boolean isPermission_CameraGranted;
 
     /* Other */
     SharedPreferences permissionPreferences;
-    boolean isFirstPermissionRequest = false;
+    boolean isFirstPermission_LocationRequest = false;
+    boolean isFirstPermission_CameraRequest = false;
 
 
     /**
@@ -139,6 +144,8 @@ public class ActivityMain extends AppCompatActivity {
         start_GPSservice = (Button) findViewById(R.id.go);
         stop_GPSservice = (Button) findViewById(R.id.stop);
 
+        scan_QRCservice = (Button) findViewById(R.id.btnScanBarcode);
+
         /* Enable the buttons */
         start_GPSservice.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,7 +156,7 @@ public class ActivityMain extends AppCompatActivity {
                 location_permission();
 
                 /* Ckeck the location permission */
-                if (isPermissionGranted) {
+                if (isPermission_LocationGranted) {
                     // The permission is granted
                     // Check if the GPS location service is running
 //                    if (!isMyServiceRunning(ServiceGpsLocation______________________.class)) {
@@ -176,6 +183,44 @@ public class ActivityMain extends AppCompatActivity {
 
             }
         });
+        scan_QRCservice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                /* Request location permission*/
+                camera_permission();
+
+                /* Ckeck the location permission */
+                if (isPermission_CameraGranted) {
+
+                    // The permission is granted
+                    scanQR();
+                    // Check if the GPS location service is running
+//                    if (!isMyServiceRunning(ServiceGpsLocation______________________.class)) {
+//                    if (!isMyServiceRunning(ServiceLocation.class)) {
+//
+//                        // GPS service is not running
+//                        // Check the GPS Provider is ON/OFF
+//                        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//                        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+//                            // Ask for GPS Provider manual activation
+//                            Intent gps_provider = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                            gps_provider.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                            startActivityForResult(gps_provider , 1);
+//                        } else{
+//                            // Start GPS Location Service
+//                            startLocation_service();
+//                        }
+//                    }
+//                    else {
+//                        // GPS service is already running
+//                        Toast.makeText(getApplicationContext(), "The service is Already Activated", Toast.LENGTH_SHORT).show();
+//                    }
+                }
+
+            }
+        });
         stop_GPSservice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -192,7 +237,8 @@ public class ActivityMain extends AppCompatActivity {
 
         /* Preferences */
         permissionPreferences = getSharedPreferences("permissionPreferences ", MODE_PRIVATE);
-        isFirstPermissionRequest = permissionPreferences.getBoolean("isFirstPermissionRequest", true);
+        isFirstPermission_LocationRequest = permissionPreferences.getBoolean("isFirstPermission_LocationRequest", true);
+        isFirstPermission_CameraRequest = permissionPreferences.getBoolean("isFirstPermission_CameraRequest", true);
 
     }
 
@@ -287,7 +333,7 @@ public class ActivityMain extends AppCompatActivity {
             /*Permission is not granted*/
 
             // Check first time requesting permission
-            if (!isFirstPermissionRequest){
+            if (!isFirstPermission_LocationRequest){
 
                 // Not the first time requesting
                 // Check if user said to not ask him again
@@ -335,8 +381,8 @@ public class ActivityMain extends AppCompatActivity {
                 // First time Requesting
                 // Will no more be the first request later
                 SharedPreferences.Editor editor = permissionPreferences.edit();
-                editor.putBoolean("isFirstPermissionRequest", false);
-                isFirstPermissionRequest = false;
+                editor.putBoolean("isFirstPermission_LocationRequest", false);
+                isFirstPermission_LocationRequest = false;
                 editor.apply();
             }
 
@@ -345,24 +391,110 @@ public class ActivityMain extends AppCompatActivity {
                     Manifest.permission.ACCESS_FINE_LOCATION,
 //                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.READ_PHONE_STATE,
-            },PERMISSION_CODE);
+            },PERMISSION_LOCATION_CODE);
 
         }else{
             /* Permission is granted */
-            isPermissionGranted = true;
+            isPermission_LocationGranted = true;
         }
     }
+
+    // Request Permission
+    public void camera_permission() {
+        /*
+         * If the SDK version is Under 23
+         * AND the permissions are NOT GRANTED
+         */
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(ActivityMain.this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED ) {
+
+            /*Permission is not granted*/
+
+            // Check first time requesting permission
+            if (!isFirstPermission_CameraRequest){
+
+                // Not the first time requesting
+                // Check if user said to not ask him again
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(ActivityMain.this, // NOTE: [DontShowAgain = shouldShowRequestPermissionRationale]
+                        Manifest.permission.CAMERA )){
+                    // Dont show again
+                    // Explain the need of this permission
+                    new AlertDialog.Builder(ActivityMain.this)
+                            .setMessage("To use this Feature you need to enable The following Permissions" +
+                                    "\n* Camera: Scan the authentification token" +
+                                    "\n From a QR Code")
+                            .setIcon(R.drawable.ic_location_on_black_24dp)
+
+                            /* dialog.requestWindowFeature(Window.FEATURE_LEFT_ICON);
+                             dialog.setFeatureDrawableResource(Window.FEATURE_LEFT_ICON, R.drawable.your_icon); */
+                            .setTitle("Permission requested")
+                            .setPositiveButton("Permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                            intent.setData(uri);
+                                            startActivity(intent);
+                                        }
+                                    }
+                            )
+                            .setNegativeButton("Cancel",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User cancelled the dialog
+                                            dialog.dismiss();
+                                        }
+                                    }
+                            )
+                            .create()
+                            .show();
+                }
+            }
+            else {
+
+                // First time Requesting
+                // Will no more be the first request later
+                SharedPreferences.Editor editor = permissionPreferences.edit();
+                editor.putBoolean("isFirstPermission_CameraRequest", false);
+                isFirstPermission_CameraRequest = false;
+                editor.apply();
+            }
+
+            // Request the permission
+            requestPermissions(new String[]{
+                    Manifest.permission.CAMERA
+            },PERMISSION_CAMERA_CODE);
+
+        }else{
+            /* Permission is granted */
+            isPermission_CameraGranted = true;
+        }
+    }
+
+
     // Result Permission
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         /* If it's our request */
-        if(requestCode == PERMISSION_CODE ){
+        if(requestCode == PERMISSION_LOCATION_CODE ){
             /* If the permissions are GRANTED */
             if(grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                     grantResults[1] == PackageManager.PERMISSION_GRANTED /*&&
+                    grantResults[2] == PackageManager.PERMISSION_GRANTED*/){
+                // Positif responce to the Anroid request Dialog
+            }else {
+                // Negatif responce to the Anroid request Dialog
+            }
+        }
+        if(requestCode == PERMISSION_CAMERA_CODE){
+            /* If the permissions are GRANTED */
+            if(grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED /*&&
                     grantResults[2] == PackageManager.PERMISSION_GRANTED*/){
                 // Positif responce to the Anroid request Dialog
             }else {
@@ -374,6 +506,9 @@ public class ActivityMain extends AppCompatActivity {
 
     /* Other */
     public void scanQR(View v){
+        startActivity(new Intent(ActivityMain.this, ActivityQRC_scanner.class));
+    }
+    public void scanQR(){
         startActivity(new Intent(ActivityMain.this, ActivityQRC_scanner.class));
     }
 }
